@@ -1,6 +1,6 @@
 # Lunar Python Backend API Contract
 
-LunarScan expects a REST API at `NEXT_PUBLIC_API_URL` (default `http://localhost:5000`) and a WebSocket at `NEXT_PUBLIC_WS_URL` (default `ws://localhost:6000/ws`).
+LunarScan expects a REST API at `NEXT_PUBLIC_API_URL` (default `https://lunar-backend-1mzo.onrender.com`) and a WebSocket at `NEXT_PUBLIC_WS_URL` (default `wss://lunar-backend-1mzo.onrender.com/ws`).
 
 All REST routes use prefix `/api/v1`. Responses may use **snake_case** (Python) — the frontend maps them automatically.
 
@@ -100,7 +100,7 @@ Return either an array or:
 
 ## WebSocket
 
-Connect to `ws://localhost:6000/ws` (or `NEXT_PUBLIC_WS_URL` + `/ws`).
+Connect to `wss://lunar-backend-1mzo.onrender.com/ws` (or `NEXT_PUBLIC_WS_URL` + `/ws`).
 
 ### Message Format
 
@@ -124,4 +124,4 @@ Also supports `"type"` instead of `"event"` and `"data"` instead of `"payload"`.
 
 ## CORS
 
-Enable CORS for the Next.js origin (e.g. `http://localhost:3000`) on the Python server.
+Enable CORS for the Next.js origin (e.g. `https://lunar-coin-blockchain-explorer.vercel.app`) on the Python server.

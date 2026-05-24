@@ -12,3 +12,4 @@ ios
 *.jks
 *.pem
 *.key
+.vercel

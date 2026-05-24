@@ -15,8 +15,8 @@ export const env = {
     anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
   },
   api: {
-    baseUrl: (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000').replace(/\/$/, ''),
-    wsUrl: process.env.NEXT_PUBLIC_WS_URL ?? 'ws://localhost:6000',
+    baseUrl: (process.env.NEXT_PUBLIC_API_URL ?? 'https://lunar-backend-1mzo.onrender.com').replace(/\/$/, ''),
+    wsUrl: process.env.NEXT_PUBLIC_WS_URL ?? 'wss://lunar-backend-1mzo.onrender.com',
     /** Use mock generators when backend is unavailable (dev only) */
     useMock: process.env.NEXT_PUBLIC_USE_MOCK_API === 'true',
     /** Request timeout in ms */
@@ -29,7 +29,11 @@ export const env = {
   auth: {
     redirectUrl:
       process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
-      (typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : ''),
+      (process.env.NEXT_PUBLIC_SITE_URL
+        ? `${process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')}/auth/callback`
+        : typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/callback`
+        : ''),
   },
 } as const
 

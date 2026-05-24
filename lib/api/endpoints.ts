@@ -1,6 +1,6 @@
 /**
  * REST API route definitions for the Lunar Python blockchain backend.
- * Base URL: NEXT_PUBLIC_API_URL (default http://localhost:5000)
+ * Base URL: NEXT_PUBLIC_API_URL (default https://lunar-backend-1mzo.onrender.com)
  */
 
 const API_PREFIX = '/api/v1'
