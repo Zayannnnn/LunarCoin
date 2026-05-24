@@ -1,0 +1,333 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* LunarScan Dark Futuristic Theme */
+:root {
+  /* Dark mode is the only mode for this app */
+  --background: oklch(0.11 0.015 265);
+  --foreground: oklch(0.95 0.01 265);
+  --card: oklch(0.14 0.015 265);
+  --card-foreground: oklch(0.95 0.01 265);
+  --popover: oklch(0.13 0.015 265);
+  --popover-foreground: oklch(0.95 0.01 265);
+  --primary: oklch(0.75 0.15 195);
+  --primary-foreground: oklch(0.12 0.02 195);
+  --secondary: oklch(0.65 0.18 280);
+  --secondary-foreground: oklch(0.95 0.01 280);
+  --muted: oklch(0.22 0.015 265);
+  --muted-foreground: oklch(0.65 0.01 265);
+  --accent: oklch(0.20 0.02 265);
+  --accent-foreground: oklch(0.95 0.01 265);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.95 0.01 25);
+  --border: oklch(0.25 0.02 265);
+  --input: oklch(0.18 0.015 265);
+  --ring: oklch(0.75 0.15 195);
+  
+  /* Chart colors - Lunar theme */
+  --chart-1: oklch(0.75 0.15 195);
+  --chart-2: oklch(0.65 0.18 280);
+  --chart-3: oklch(0.72 0.19 155);
+  --chart-4: oklch(0.8 0.18 85);
+  --chart-5: oklch(0.65 0.2 25);
+  
+  --radius: 0.75rem;
+  
+  /* Sidebar - Slightly darker for depth */
+  --sidebar: oklch(0.09 0.015 265);
+  --sidebar-foreground: oklch(0.9 0.01 265);
+  --sidebar-primary: oklch(0.75 0.15 195);
+  --sidebar-primary-foreground: oklch(0.12 0.02 195);
+  --sidebar-accent: oklch(0.16 0.015 265);
+  --sidebar-accent-foreground: oklch(0.95 0.01 265);
+  --sidebar-border: oklch(0.22 0.02 265);
+  --sidebar-ring: oklch(0.75 0.15 195);
+  
+  /* Custom colors for the explorer */
+  --success: oklch(0.72 0.19 155);
+  --success-foreground: oklch(0.15 0.05 155);
+  --warning: oklch(0.8 0.18 85);
+  --warning-foreground: oklch(0.15 0.05 85);
+  --info: oklch(0.75 0.15 195);
+  --info-foreground: oklch(0.12 0.02 195);
+  
+  /* Glow effects */
+  --glow-primary: oklch(0.75 0.15 195 / 0.4);
+  --glow-secondary: oklch(0.65 0.18 280 / 0.3);
+  --glow-success: oklch(0.72 0.19 155 / 0.3);
+}
+
+/* Force dark mode - no light mode for this app */
+.dark {
+  --background: oklch(0.11 0.015 265);
+  --foreground: oklch(0.95 0.01 265);
+  --card: oklch(0.14 0.015 265);
+  --card-foreground: oklch(0.95 0.01 265);
+  --popover: oklch(0.13 0.015 265);
+  --popover-foreground: oklch(0.95 0.01 265);
+  --primary: oklch(0.75 0.15 195);
+  --primary-foreground: oklch(0.12 0.02 195);
+  --secondary: oklch(0.65 0.18 280);
+  --secondary-foreground: oklch(0.95 0.01 280);
+  --muted: oklch(0.22 0.015 265);
+  --muted-foreground: oklch(0.65 0.01 265);
+  --accent: oklch(0.20 0.02 265);
+  --accent-foreground: oklch(0.95 0.01 265);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.95 0.01 25);
+  --border: oklch(0.25 0.02 265);
+  --input: oklch(0.18 0.015 265);
+  --ring: oklch(0.75 0.15 195);
+  --chart-1: oklch(0.75 0.15 195);
+  --chart-2: oklch(0.65 0.18 280);
+  --chart-3: oklch(0.72 0.19 155);
+  --chart-4: oklch(0.8 0.18 85);
+  --chart-5: oklch(0.65 0.2 25);
+  --sidebar: oklch(0.09 0.015 265);
+  --sidebar-foreground: oklch(0.9 0.01 265);
+  --sidebar-primary: oklch(0.75 0.15 195);
+  --sidebar-primary-foreground: oklch(0.12 0.02 195);
+  --sidebar-accent: oklch(0.16 0.015 265);
+  --sidebar-accent-foreground: oklch(0.95 0.01 265);
+  --sidebar-border: oklch(0.22 0.02 265);
+  --sidebar-ring: oklch(0.75 0.15 195);
+}
+
+@theme inline {
+  --font-sans: 'Geist', 'Geist Fallback', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback', monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+  h1, h2, h3 {
+    @apply tracking-tight;
+  }
+}
+
+/* Custom utility classes for LunarScan */
+@layer utilities {
+  .glow-primary {
+    box-shadow: 0 0 20px var(--glow-primary), 0 0 40px var(--glow-primary);
+  }
+  
+  .glow-secondary {
+    box-shadow: 0 0 20px var(--glow-secondary), 0 0 40px var(--glow-secondary);
+  }
+  
+  .glow-success {
+    box-shadow: 0 0 15px var(--glow-success);
+  }
+  
+  .card-glow {
+    box-shadow: 0 0 1px 1px var(--glow-primary);
+  }
+  
+  .card-glow-hover {
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .card-glow-hover:hover {
+    box-shadow: 0 0 20px var(--glow-primary), inset 0 0 20px oklch(0.75 0.15 195 / 0.05);
+  }
+  
+  .text-gradient-primary {
+    background: linear-gradient(135deg, oklch(0.75 0.15 195) 0%, oklch(0.65 0.18 280) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .border-glow {
+    border: 1px solid oklch(0.75 0.15 195 / 0.3);
+  }
+  
+  .pulse-live {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 5px var(--glow-success);
+    }
+    50% {
+      box-shadow: 0 0 20px var(--glow-success), 0 0 30px var(--glow-success);
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+  
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.3 0.015 265) transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: oklch(0.3 0.015 265);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.4 0.015 265);
+  }
+
+  /* Glassmorphism */
+  .glass-card {
+    background: oklch(0.14 0.015 265 / 0.55);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    box-shadow:
+      0 0 0 1px oklch(0.75 0.15 195 / 0.06),
+      0 8px 32px oklch(0 0 0 / 0.35),
+      inset 0 1px 0 oklch(1 0 0 / 0.04);
+  }
+
+  .glass-sidebar {
+    background: oklch(0.09 0.015 265 / 0.85);
+    backdrop-filter: blur(20px) saturate(1.3);
+    -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  }
+
+  .glass-header {
+    background: oklch(0.12 0.015 265 / 0.7);
+    backdrop-filter: blur(12px) saturate(1.2);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  }
+
+  .glass-input {
+    background: oklch(0.16 0.015 265 / 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid oklch(0.75 0.15 195 / 0.12);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .glass-input:focus-within {
+    border-color: oklch(0.75 0.15 195 / 0.4);
+    box-shadow: 0 0 0 3px oklch(0.75 0.15 195 / 0.1), 0 0 20px oklch(0.75 0.15 195 / 0.08);
+  }
+
+  .dashboard-mesh {
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, oklch(0.75 0.15 195 / 0.12), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, oklch(0.65 0.18 280 / 0.08), transparent),
+      radial-gradient(ellipse 50% 30% at 0% 100%, oklch(0.75 0.15 195 / 0.05), transparent);
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      oklch(0.18 0.015 265) 0%,
+      oklch(0.24 0.02 265) 50%,
+      oklch(0.18 0.015 265) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+  .stagger-6 { animation-delay: 0.3s; }
+  .stagger-7 { animation-delay: 0.35s; }
+  .stagger-8 { animation-delay: 0.4s; }
+
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out both;
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .neon-text {
+    text-shadow: 0 0 20px oklch(0.75 0.15 195 / 0.5);
+  }
+}
