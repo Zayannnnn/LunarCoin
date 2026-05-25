@@ -13,3 +13,4 @@ ios
 *.pem
 *.key
 .vercel
+.env*
