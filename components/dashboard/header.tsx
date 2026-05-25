@@ -31,8 +31,8 @@ export function Header({ user, onMenuClick }: HeaderProps) {
     await search(searchQuery)
   }
 
-  const userInitials = user?.email?.slice(0, 2).toUpperCase() || 'U'
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
+  const userInitials = (user?.email ? user.email.slice(0, 2).toUpperCase() : 'U')
+  const userName = user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : 'User')
 
   return (
     <header className="h-16 border-b border-border/50 glass-header flex items-center justify-between px-4 gap-4 shrink-0">

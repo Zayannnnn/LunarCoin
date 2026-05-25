@@ -34,8 +34,9 @@ import {
   Loader2,
 } from 'lucide-react'
 
-function truncateHash(hash: string, chars: number = 8): string {
-  return `${hash.slice(0, chars + 2)}...${hash.slice(-chars)}`
+function truncateHash(hash?: string, chars: number = 8): string {
+  const s = hash ?? ''
+  return `${s.slice(0, chars + 2)}...${s.slice(-chars)}`
 }
 
 function formatTimeAgo(timestamp: number): string {
@@ -214,10 +215,10 @@ export default function TransactionsPage() {
                           {truncateHash(tx.to, 4)}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          {tx.amount.toFixed(4)} LUNAR
+                          {(tx.amount ?? 0).toFixed(4)} LUNAR
                         </TableCell>
                         <TableCell className="text-right text-sm text-muted-foreground">
-                          {tx.fee.toFixed(6)}
+                          {(tx.fee ?? 0).toFixed(6)}
                         </TableCell>
                         <TableCell>
                           <span className={cn(

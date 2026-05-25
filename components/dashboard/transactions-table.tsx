@@ -18,8 +18,9 @@ interface TransactionsTableProps {
   className?: string
 }
 
-function truncateHash(hash: string, chars = 6): string {
-  return `${hash.slice(0, chars + 2)}...${hash.slice(-chars)}`
+function truncateHash(hash?: string, chars = 6): string {
+  const s = hash ?? ''
+  return `${s.slice(0, chars + 2)}...${s.slice(-chars)}`
 }
 
 function formatTimeAgo(timestamp: number): string {
@@ -61,7 +62,7 @@ export function TransactionsTable({ transactions, className }: TransactionsTable
             </TableRow>
           </TableHeader>
           <TableBody>
-            {transactions.map((tx) => (
+                {(transactions || []).map((tx) => (
               <TableRow
                 key={tx.hash}
                 className="border-border/30 hover:bg-primary/5 transition-colors cursor-pointer"
@@ -83,12 +84,12 @@ export function TransactionsTable({ transactions, className }: TransactionsTable
                     <p className="text-foreground/70">→ {truncateHash(tx.to, 4)}</p>
                   </div>
                 </TableCell>
-                <TableCell className="text-right font-semibold tabular-nums text-sm">
-                  {tx.amount.toFixed(4)}
+                  <TableCell className="text-right font-semibold tabular-nums text-sm">
+                  {(tx.amount ?? 0).toFixed(4)}
                   <span className="text-[10px] text-muted-foreground ml-1">LUNAR</span>
                 </TableCell>
                 <TableCell className="text-right hidden md:table-cell text-xs text-muted-foreground font-mono tabular-nums">
-                  {tx.fee.toFixed(6)}
+                  {(tx.fee ?? 0).toFixed(6)}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex flex-col items-end gap-1">

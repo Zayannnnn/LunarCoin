@@ -8,13 +8,15 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 
 interface MiningPanelProps {
-  stats: MiningStats
+  stats?: MiningStats | null
   className?: string
 }
 
 export function MiningPanel({ stats, className }: MiningPanelProps) {
-  const halvingProgress =
-    ((stats.nextHalvingBlock - stats.blocksUntilHalving) / stats.nextHalvingBlock) * 100
+  const safe = stats ?? ({} as MiningStats)
+  const halvingProgress = safe.nextHalvingBlock
+    ? ((safe.nextHalvingBlock - (safe.blocksUntilHalving ?? 0)) / safe.nextHalvingBlock) * 100
+    : 0
 
   return (
     <GlassCard
@@ -35,20 +37,20 @@ export function MiningPanel({ stats, className }: MiningPanelProps) {
             <Zap className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="text-xl font-bold tracking-tight">{stats.networkHashRate}</p>
+            <p className="text-xl font-bold tracking-tight">{safe.networkHashRate ?? '-'}</p>
             <p className="text-xs text-muted-foreground">Network hash rate</p>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-center">
           <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
-            <p className="text-sm font-bold tabular-nums">{stats.blocksLast24h}</p>
+            <p className="text-sm font-bold tabular-nums">{safe.blocksLast24h ?? 0}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Blocks / 24h</p>
           </div>
           <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
             <p className="text-sm font-bold tabular-nums flex items-center justify-center gap-1">
               <Users className="h-3 w-3 text-primary" />
-              {stats.totalMinersActive}
+              {safe.totalMinersActive ?? 0}
             </p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Active miners</p>
           </div>
@@ -59,14 +61,14 @@ export function MiningPanel({ stats, className }: MiningPanelProps) {
             <span className="flex items-center gap-1 text-muted-foreground">
               <Award className="h-3 w-3" /> Block reward
             </span>
-            <span className="font-semibold text-primary">{stats.blockReward} LUNAR</span>
+              <span className="font-semibold text-primary">{safe.blockReward ?? 0} LUNAR</span>
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="flex items-center gap-1 text-muted-foreground">
               <Pickaxe className="h-3 w-3" /> Next halving
             </span>
-            <span className="font-mono text-xs tabular-nums">
-              {stats.blocksUntilHalving.toLocaleString()} blocks
+              <span className="font-mono text-xs tabular-nums">
+              {(safe.blocksUntilHalving ?? 0).toLocaleString()} blocks
             </span>
           </div>
           <Progress value={halvingProgress} className="h-1.5" />

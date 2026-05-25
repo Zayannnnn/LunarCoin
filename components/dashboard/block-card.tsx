@@ -17,8 +17,9 @@ function formatTimeAgo(timestamp: number): string {
   return `${Math.floor(seconds / 86400)}d ago`
 }
 
-function truncateHash(hash: string, chars: number = 8): string {
-  return `${hash.slice(0, chars + 2)}...${hash.slice(-chars)}`
+function truncateHash(hash?: string, chars: number = 8): string {
+  const s = hash ?? ''
+  return `${s.slice(0, chars + 2)}...${s.slice(-chars)}`
 }
 
 export function BlockCard({ block, className }: BlockCardProps) {
@@ -38,10 +39,10 @@ export function BlockCard({ block, className }: BlockCardProps) {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-foreground">
-                #{block.height.toLocaleString()}
+                #{(block.height ?? 0).toLocaleString()}
               </span>
               <span className="text-xs px-2 py-0.5 rounded bg-success/10 text-success">
-                +{block.reward} LUNAR
+                +{block.reward ?? 0} LUNAR
               </span>
             </div>
             <p className="text-xs text-muted-foreground font-mono mt-1">

@@ -20,13 +20,14 @@ function getLatencyColor(latency: number): string {
 }
 
 export function PeersPanel({ peers, connectedCount, className }: PeersPanelProps) {
-  const topPeers = peers.slice(0, 5)
+  const list = peers || []
+  const topPeers = list.slice(0, 5)
   const avgLatency =
-    peers.length > 0
-      ? Math.round(peers.reduce((sum, p) => sum + p.latency, 0) / peers.length)
+    list.length > 0
+      ? Math.round(list.reduce((sum, p) => sum + p.latency, 0) / list.length)
       : 0
 
-  const countries = new Set(peers.map((p) => p.country).filter(Boolean))
+  const countries = new Set(list.map((p) => p.country).filter(Boolean))
 
   return (
     <GlassCard

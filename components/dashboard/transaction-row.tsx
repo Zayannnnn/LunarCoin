@@ -18,8 +18,9 @@ function formatTimeAgo(timestamp: number): string {
   return `${Math.floor(seconds / 86400)}d ago`
 }
 
-function truncateHash(hash: string, chars: number = 6): string {
-  return `${hash.slice(0, chars + 2)}...${hash.slice(-chars)}`
+function truncateHash(hash?: string, chars: number = 6): string {
+  const s = hash ?? ''
+  return `${s.slice(0, chars + 2)}...${s.slice(-chars)}`
 }
 
 const statusColors = {
@@ -29,8 +30,8 @@ const statusColors = {
 }
 
 export function TransactionRow({ transaction, className, highlightAddress }: TransactionRowProps) {
-  const isIncoming = highlightAddress && transaction.to.toLowerCase() === highlightAddress.toLowerCase()
-  const isOutgoing = highlightAddress && transaction.from.toLowerCase() === highlightAddress.toLowerCase()
+  const isIncoming = Boolean(highlightAddress && transaction.to && transaction.to.toLowerCase() === highlightAddress.toLowerCase())
+  const isOutgoing = Boolean(highlightAddress && transaction.from && transaction.from.toLowerCase() === highlightAddress.toLowerCase())
   
   return (
     <Link
@@ -73,10 +74,10 @@ export function TransactionRow({ transaction, className, highlightAddress }: Tra
       <div className="flex items-center gap-4 shrink-0">
         <div className="text-right">
           <p className="text-sm font-semibold text-foreground">
-            {transaction.amount.toFixed(4)} LUNAR
+            {(transaction.amount ?? 0).toFixed(4)} LUNAR
           </p>
           <p className="text-xs text-muted-foreground">
-            Fee: {transaction.fee.toFixed(6)}
+            Fee: {(transaction.fee ?? 0).toFixed(6)}
           </p>
         </div>
 

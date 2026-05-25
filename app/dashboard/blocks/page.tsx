@@ -19,8 +19,9 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { ChevronLeft, ChevronRight, Blocks as BlocksIcon, Clock, Database, Zap } from 'lucide-react'
 
-function truncateHash(hash: string, chars: number = 8): string {
-  return `${hash.slice(0, chars + 2)}...${hash.slice(-chars)}`
+function truncateHash(hash?: string, chars: number = 8): string {
+  const s = hash ?? ''
+  return `${s.slice(0, chars + 2)}...${s.slice(-chars)}`
 }
 
 function formatTimeAgo(timestamp: number): string {
@@ -70,7 +71,7 @@ export default function BlocksPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              #{blocks[0]?.height.toLocaleString() || '-'}
+              #{blocks[0] && blocks[0].height ? blocks[0].height.toLocaleString() : '-'}
             </div>
           </CardContent>
         </Card>

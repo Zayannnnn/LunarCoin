@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 
 interface MempoolPanelProps {
-  data: MempoolData
+  data?: MempoolData | null
   className?: string
 }
 
@@ -20,8 +20,9 @@ function formatBytes(bytes: number): string {
 }
 
 export function MempoolPanel({ data, className }: MempoolPanelProps) {
-  const totalFees = data.feeDistribution.reduce((sum, d) => sum + d.count, 0)
-  const maxCount = Math.max(...data.feeDistribution.map((d) => d.count), 1)
+  const fd = data?.feeDistribution || []
+  const totalFees = fd.reduce((sum, d) => sum + (d.count || 0), 0)
+  const maxCount = Math.max(...fd.map((d) => d.count || 0), 1)
 
   return (
     <GlassCard
@@ -41,14 +42,14 @@ export function MempoolPanel({ data, className }: MempoolPanelProps) {
           <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
             <Layers className="h-4 w-4 text-primary shrink-0" />
             <div>
-              <p className="text-lg font-bold tabular-nums">{data.transactions.toLocaleString()}</p>
+              <p className="text-lg font-bold tabular-nums">{(data?.transactions ?? 0).toLocaleString()}</p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Pending txns</p>
             </div>
           </div>
           <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
             <Database className="h-4 w-4 text-primary shrink-0" />
             <div>
-              <p className="text-lg font-bold tabular-nums">{formatBytes(data.size)}</p>
+              <p className="text-lg font-bold tabular-nums">{formatBytes(data?.size ?? 0)}</p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Pool size</p>
             </div>
           </div>
@@ -63,7 +64,7 @@ export function MempoolPanel({ data, className }: MempoolPanelProps) {
               <Clock className="h-3 w-3" /> ~{Math.round(totalFees / 120)}s avg wait
             </span>
           </div>
-          {data.feeDistribution.map((tier, i) => (
+            {fd.map((tier, i) => (
             <div key={tier.range} className="space-y-1">
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">{tier.range}</span>

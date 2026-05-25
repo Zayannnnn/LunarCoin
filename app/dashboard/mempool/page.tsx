@@ -133,9 +133,9 @@ export default function MempoolPage() {
           title="Fee Distribution" 
           description="Transaction count by fee range (LUNAR)"
         >
-          <div className="h-[300px]">
+              <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mempool.feeDistribution}>
+              <BarChart data={mempool.feeDistribution || []}>
                 <XAxis 
                   dataKey="range" 
                   stroke="oklch(0.5 0.01 265)"
@@ -160,7 +160,7 @@ export default function MempoolPage() {
                   cursor={{ fill: 'oklch(0.75 0.15 195 / 0.1)' }}
                 />
                 <Bar dataKey="count" name="Transactions" radius={[4, 4, 0, 0]}>
-                  {mempool.feeDistribution.map((_, index) => (
+                  {(mempool.feeDistribution || []).map((_, index) => (
                     <Cell key={`cell-${index}`} fill={barColors[index % barColors.length]} />
                   ))}
                 </Bar>
@@ -176,11 +176,11 @@ export default function MempoolPage() {
           <CardTitle>Pending Transactions</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {mempool?.pendingTransactions.slice(0, 10).map((tx) => (
+          {(mempool?.pendingTransactions || []).slice(0, 10).map((tx) => (
             <TransactionRow key={tx.hash} transaction={tx} />
           ))}
-          
-          {mempool?.pendingTransactions.length === 0 && (
+
+          {(mempool?.pendingTransactions || []).length === 0 && (
             <p className="text-center text-muted-foreground py-8">
               No pending transactions in the mempool.
             </p>

@@ -72,16 +72,25 @@ export function OverviewContent() {
     )
   }
 
-  const { stats, blocks, transactions, feeHistory, tpsHistory, mempool, mining, peers } = data
+  const {
+    stats,
+    blocks = [],
+    transactions = [],
+    feeHistory = [],
+    tpsHistory = [],
+    mempool = null,
+    mining = null,
+    peers = [],
+  } = data
 
-  const feeChartData = feeHistory.map((d) => ({
+  const feeChartData = (feeHistory || []).map((d) => ({
     time: formatTime(d.timestamp),
     low: d.low * 1000000,
     medium: d.medium * 1000000,
     high: d.high * 1000000,
   }))
 
-  const tpsChartData = tpsHistory.map((d) => ({
+  const tpsChartData = (tpsHistory || []).map((d) => ({
     time: formatTime(d.timestamp),
     tps: d.value,
   }))
@@ -245,10 +254,10 @@ export function OverviewContent() {
             </Button>
           </div>
           <div className="hidden md:block">
-            <TransactionsTable transactions={transactions} />
+            <TransactionsTable transactions={transactions || []} />
           </div>
           <div className="md:hidden space-y-3">
-            {transactions.slice(0, 6).map((tx) => (
+            {(transactions || []).slice(0, 6).map((tx) => (
               <TransactionRow key={tx.hash} transaction={tx} />
             ))}
           </div>
