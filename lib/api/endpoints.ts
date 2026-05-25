@@ -5,7 +5,7 @@
 
 import { env } from '@/lib/config/env'
 
-const API_PREFIX = `${env.api.baseUrl}/api/v1`
+const API_PREFIX = env.api.baseUrl
 
 export const endpoints = {
   health: `${API_PREFIX}/health`,

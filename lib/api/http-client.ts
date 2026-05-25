@@ -64,6 +64,14 @@ export async function apiRequest<T>(
   } = options
 
   const url = buildUrl(path, params)
+  if (!/^https:\/\//i.test(url)) {
+    throw new ApiError('API request must use HTTPS', {
+      status: 0,
+      code: 'INVALID_URL',
+      details: url,
+    })
+  }
+
   let lastError: ApiError | null = null
 
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -82,6 +90,8 @@ export async function apiRequest<T>(
       })
 
       clearTimeout(timeoutId)
+      console.log('Fetching:', url)
+      console.log('Response:', response)
 
       if (!response.ok) {
         const error = await parseErrorResponse(response)
@@ -97,7 +107,21 @@ export async function apiRequest<T>(
         return undefined as T
       }
 
-      return (await response.json()) as T
+      const rawText = await response.text()
+      let data: unknown
+
+      try {
+        data = rawText ? JSON.parse(rawText) : undefined
+      } catch (error) {
+        throw new ApiError('Failed to parse JSON response', {
+          status: response.status,
+          code: 'INVALID_JSON',
+          details: rawText,
+        })
+      }
+
+      console.log('Parsed data:', data)
+      return data as T
     } catch (error) {
       clearTimeout(timeoutId)
 

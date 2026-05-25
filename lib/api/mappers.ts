@@ -217,5 +217,10 @@ export function extractList<T>(response: PaginatedResponse<T> | T[] | Record<str
 
 export function extractTotal(response: PaginatedResponse<unknown> | unknown[], fallback: number): number {
   if (Array.isArray(response)) return fallback
-  return (response as PaginatedResponse<unknown>).total ?? fallback
+  const obj = response as Record<string, unknown>
+  return (
+    (obj.total as number | undefined) ??
+    (obj.total_blocks as number | undefined) ??
+    fallback
+  )
 }

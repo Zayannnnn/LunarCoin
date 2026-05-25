@@ -15,8 +15,21 @@ export const env = {
     anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
   },
   api: {
-    baseUrl: (process.env.NEXT_PUBLIC_API_URL ?? 'https://lunar-backend-1mzo.onrender.com').replace(/\/$/, ''),
-    wsUrl: process.env.NEXT_PUBLIC_WS_URL ?? 'wss://lunar-backend-1mzo.onrender.com',
+    baseUrl: (() => {
+      const rawUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://lunar-backend-1mzo.onrender.com'
+      const normalized = rawUrl.replace(/\/$/, '')
+      if (!/^https:\/\//i.test(normalized)) {
+        throw new Error('NEXT_PUBLIC_API_URL must use https://')
+      }
+      return normalized
+    })(),
+    wsUrl: (() => {
+      const rawWsUrl = process.env.NEXT_PUBLIC_WS_URL ?? 'wss://lunar-backend-1mzo.onrender.com'
+      if (!/^wss:\/\//i.test(rawWsUrl)) {
+        throw new Error('NEXT_PUBLIC_WS_URL must use wss://')
+      }
+      return rawWsUrl
+    })(),
     /** Use mock generators when backend is unavailable (dev only) */
     useMock: process.env.NEXT_PUBLIC_USE_MOCK_API === 'true',
     /** Request timeout in ms */
