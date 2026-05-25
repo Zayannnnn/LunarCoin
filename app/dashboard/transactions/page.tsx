@@ -81,11 +81,18 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     async function fetchTransactions() {
-      setLoading(true)
-      const data = await blockchainApi.getTransactions(page, limit, filter)
-      setTransactions(data.transactions)
-      setTotal(data.total)
-      setLoading(false)
+      try {
+        setLoading(true)
+        const data = await blockchainApi.getTransactions(page, limit, filter)
+        setTransactions(data?.transactions || [])
+        setTotal(data?.total ?? 0)
+      } catch (err) {
+        console.error('Failed to fetch transactions:', err)
+        setTransactions([])
+        setTotal(0)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchTransactions()
   }, [page, filter])

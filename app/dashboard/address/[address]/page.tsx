@@ -49,15 +49,23 @@ export default function AddressDetailPage() {
 
   useEffect(() => {
     async function fetchData() {
-      setLoading(true)
-      const [addrData, txData] = await Promise.all([
-        blockchainApi.getAddress(address),
-        blockchainApi.getAddressTransactions(address, page, limit),
-      ])
-      setAddressData(addrData)
-      setTransactions(txData.transactions)
-      setTotalTxns(txData.total)
-      setLoading(false)
+      try {
+        setLoading(true)
+        const [addrData, txData] = await Promise.all([
+          blockchainApi.getAddress(address),
+          blockchainApi.getAddressTransactions(address, page, limit),
+        ])
+        setAddressData(addrData || null)
+        setTransactions(txData?.transactions || [])
+        setTotalTxns(txData?.total ?? 0)
+      } catch (err) {
+        console.error('Failed to fetch address data:', err)
+        setAddressData(null)
+        setTransactions([])
+        setTotalTxns(0)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchData()
   }, [address, page])
@@ -70,7 +78,7 @@ export default function AddressDetailPage() {
 
   const totalPages = Math.ceil(totalTxns / limit)
 
-  if (loading && !addressData) {
+  if (loading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-64" />

@@ -58,18 +58,27 @@ export default function MiningPage() {
 
   useEffect(() => {
     async function fetchData() {
-      setLoading(true)
-      const [statsData, minersData, hashData, diffData] = await Promise.all([
-        blockchainApi.getMiningStats(),
-        blockchainApi.getTopMiners(10),
-        blockchainApi.getHashRateHistory(48),
-        blockchainApi.getDifficultyHistory(48),
-      ])
-      setStats(statsData)
-      setMiners(minersData)
-      setHashRateHistory(hashData)
-      setDifficultyHistory(diffData)
-      setLoading(false)
+      try {
+        setLoading(true)
+        const [statsData, minersData, hashData, diffData] = await Promise.all([
+          blockchainApi.getMiningStats(),
+          blockchainApi.getTopMiners(10),
+          blockchainApi.getHashRateHistory(48),
+          blockchainApi.getDifficultyHistory(48),
+        ])
+        setStats(statsData || null)
+        setMiners(minersData || [])
+        setHashRateHistory(hashData || [])
+        setDifficultyHistory(diffData || [])
+      } catch (err) {
+        console.error('Failed to fetch mining data:', err)
+        setStats(null)
+        setMiners([])
+        setHashRateHistory([])
+        setDifficultyHistory([])
+      } finally {
+        setLoading(false)
+      }
     }
     
     fetchData()
@@ -77,17 +86,17 @@ export default function MiningPage() {
     return () => clearInterval(interval)
   }, [])
 
-  const hashChartData = hashRateHistory.map(d => ({
-    time: formatTime(d.timestamp),
-    hashRate: d.value,
+  const hashChartData = (hashRateHistory || []).map(d => ({
+    time: formatTime(d?.timestamp ?? Date.now()),
+    hashRate: d?.value ?? 0,
   }))
 
-  const difficultyChartData = difficultyHistory.map(d => ({
-    time: formatTime(d.timestamp),
-    difficulty: d.value / 1e12,
+  const difficultyChartData = (difficultyHistory || []).map(d => ({
+    time: formatTime(d?.timestamp ?? Date.now()),
+    difficulty: (d?.value ?? 0) / 1e12,
   }))
 
-  if (loading && !stats) {
+  if (loading) {
     return (
       <div className="space-y-6">
         <div>
@@ -337,7 +346,7 @@ export default function MiningPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {miners.map((miner, index) => (
+                {(miners || []).map((miner, index) => (
                   <TableRow key={miner.address} className="border-border/50 hover:bg-accent/50">
                     <TableCell className="font-semibold">
                       <span className={`px-2 py-1 rounded ${
@@ -350,18 +359,18 @@ export default function MiningPage() {
                       </span>
                     </TableCell>
                     <TableCell className="font-mono text-sm">
-                      {truncateAddress(miner.address)}
+                      {truncateAddress(miner?.address ?? '')}
                     </TableCell>
-                    <TableCell>{miner.blocksMinedLast24h}</TableCell>
-                    <TableCell>{miner.totalBlocksMined.toLocaleString()}</TableCell>
+                    <TableCell>{miner?.blocksMinedLast24h ?? 0}</TableCell>
+                    <TableCell>{(miner?.totalBlocksMined ?? 0).toLocaleString()}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Progress value={miner.hashRateShare} className="w-16 h-2" />
-                        <span className="text-sm">{miner.hashRateShare}%</span>
+                        <Progress value={miner?.hashRateShare ?? 0} className="w-16 h-2" />
+                        <span className="text-sm">{miner?.hashRateShare ?? 0}%</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {formatTimeAgo(miner.lastBlockMined)}
+                      {formatTimeAgo(miner?.lastBlockMined ?? Date.now())}
                     </TableCell>
                   </TableRow>
                 ))}

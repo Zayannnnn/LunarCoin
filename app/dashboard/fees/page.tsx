@@ -64,14 +64,21 @@ export default function FeesPage() {
 
   useEffect(() => {
     async function fetchData() {
-      setLoading(true)
-      const [estimatesData, historyData] = await Promise.all([
-        blockchainApi.getFeeEstimates(),
-        blockchainApi.getFeeHistory(48),
-      ])
-      setEstimates(estimatesData)
-      setFeeHistory(historyData)
-      setLoading(false)
+      try {
+        setLoading(true)
+        const [estimatesData, historyData] = await Promise.all([
+          blockchainApi.getFeeEstimates(),
+          blockchainApi.getFeeHistory(48),
+        ])
+        setEstimates(estimatesData || [])
+        setFeeHistory(historyData || [])
+      } catch (err) {
+        console.error('Failed to fetch fee data:', err)
+        setEstimates([])
+        setFeeHistory([])
+      } finally {
+        setLoading(false)
+      }
     }
     
     fetchData()
@@ -79,11 +86,11 @@ export default function FeesPage() {
     return () => clearInterval(interval)
   }, [])
 
-  const chartData = feeHistory.map(d => ({
-    time: formatTime(d.timestamp),
-    low: d.low * 1e6,
-    medium: d.medium * 1e6,
-    high: d.high * 1e6,
+  const chartData = (feeHistory || []).map(d => ({
+    time: formatTime(d?.timestamp ?? Date.now()),
+    low: (d?.low ?? 0) * 1e6,
+    medium: (d?.medium ?? 0) * 1e6,
+    high: (d?.high ?? 0) * 1e6,
   }))
 
   if (loading) {
@@ -115,42 +122,50 @@ export default function FeesPage() {
 
       {/* Fee Estimates */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {estimates.map((estimate) => {
-          const config = priorityConfig[estimate.priority]
-          const Icon = config.icon
-          
-          return (
-            <Card 
-              key={estimate.priority} 
-              className={cn(
-                'bg-card/50 border-2 transition-all duration-200 hover:scale-[1.02]',
-                config.borderColor
-              )}
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <div className={cn('p-2 rounded-lg', config.bgColor)}>
-                    <Icon className={cn('h-5 w-5', config.color)} />
+        {(estimates || []).length === 0 ? (
+          <Card className="md:col-span-3 bg-muted/20 border-border/50">
+            <CardContent className="py-8">
+              <p className="text-center text-muted-foreground">No fee estimates available</p>
+            </CardContent>
+          </Card>
+        ) : (
+          (estimates || []).map((estimate) => {
+            const config = priorityConfig[estimate?.priority ?? 'medium']
+            const Icon = config.icon
+            
+            return (
+              <Card 
+                key={estimate?.priority ?? 'default'} 
+                className={cn(
+                  'bg-card/50 border-2 transition-all duration-200 hover:scale-[1.02]',
+                  config.borderColor
+                )}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div className={cn('p-2 rounded-lg', config.bgColor)}>
+                      <Icon className={cn('h-5 w-5', config.color)} />
+                    </div>
+                    <span className={cn('text-xs font-medium px-2 py-1 rounded', config.bgColor, config.color)}>
+                      {formatDuration(estimate?.estimatedTime ?? 0)}
+                    </span>
                   </div>
-                  <span className={cn('text-xs font-medium px-2 py-1 rounded', config.bgColor, config.color)}>
-                    {formatDuration(estimate.estimatedTime)}
-                  </span>
-                </div>
-                <CardTitle className="text-lg mt-3">{config.label}</CardTitle>
-                <CardDescription>{config.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold">{(estimate.fee * 1e6).toFixed(2)}</span>
-                  <span className="text-sm text-muted-foreground">μLUNAR</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  ≈ {estimate.fee.toFixed(6)} LUNAR per transaction
-                </p>
-              </CardContent>
-            </Card>
-          )
-        })}
+                  <CardTitle className="text-lg mt-3">{config.label}</CardTitle>
+                  <CardDescription>{config.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold">{((estimate?.fee ?? 0) * 1e6).toFixed(2)}</span>
+                    <span className="text-sm text-muted-foreground">μLUNAR</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ≈ {(estimate?.fee ?? 0).toFixed(6)} LUNAR per transaction
+                  </p>
+                </CardContent>
+              </Card>
+            )
+          })
+        )}
       </div>
 
       {/* Info Card */}

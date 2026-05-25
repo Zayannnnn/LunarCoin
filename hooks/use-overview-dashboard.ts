@@ -93,58 +93,83 @@ export function useOverviewDashboard() {
     return () => clearInterval(interval)
   }, [fetchAll])
 
-  // WebSocket real-time patches (connection managed by BlockchainProvider)
+  // WebSocket real-time patches (optional, connection managed by BlockchainProvider)
   useEffect(() => {
-    const unsubStatus = blockchainWebSocket.onStatusChange(setWsStatus)
+    try {
+      const unsubStatus = blockchainWebSocket.onStatusChange(setWsStatus)
 
-    const unsubStats = blockchainWebSocket.subscribe('network_stats', (payload) => {
-      const raw = payload as { stats?: BackendNetworkStats } & BackendNetworkStats
-      const statsRaw = raw.stats ?? raw
-      setData((prev) =>
-        prev ? { ...prev, stats: mapNetworkStats(statsRaw) } : prev
-      )
-      setLastUpdated(new Date())
-    })
-
-    const unsubBlock = blockchainWebSocket.subscribe('new_block', (payload) => {
-      const raw = payload as { block?: BackendBlock } & BackendBlock
-      const blockRaw = raw.block ?? raw
-      const block = mapBlock(blockRaw)
-      setData((prev) => {
-        if (!prev) return prev
-        const blocks = [block, ...prev.blocks.filter((b) => b.height !== block.height)].slice(0, 6)
-        return { ...prev, blocks }
+      const unsubStats = blockchainWebSocket.subscribe('network_stats', (payload) => {
+        try {
+          const raw = payload as { stats?: BackendNetworkStats } & BackendNetworkStats
+          const statsRaw = raw.stats ?? raw
+          setData((prev) =>
+            prev ? { ...prev, stats: mapNetworkStats(statsRaw) } : prev
+          )
+          setLastUpdated(new Date())
+        } catch (err) {
+          console.warn('Error processing network_stats:', err)
+        }
       })
-      setLastUpdated(new Date())
-    })
 
-    const unsubTx = blockchainWebSocket.subscribe('new_transaction', (payload) => {
-      const raw = payload as { transaction?: BackendTransaction } & BackendTransaction
-      const txRaw = raw.transaction ?? raw
-      const tx = mapTransaction(txRaw)
-      setData((prev) => {
-        if (!prev) return prev
-        const transactions = [tx, ...prev.transactions.filter((t) => t.hash !== tx.hash)].slice(0, 8)
-        return { ...prev, transactions }
+      const unsubBlock = blockchainWebSocket.subscribe('new_block', (payload) => {
+        try {
+          const raw = payload as { block?: BackendBlock } & BackendBlock
+          const blockRaw = raw.block ?? raw
+          const block = mapBlock(blockRaw)
+          setData((prev) => {
+            if (!prev) return prev
+            const blocks = [block, ...prev.blocks.filter((b) => b.height !== block.height)].slice(0, 6)
+            return { ...prev, blocks }
+          })
+          setLastUpdated(new Date())
+        } catch (err) {
+          console.warn('Error processing new_block:', err)
+        }
       })
-      setLastUpdated(new Date())
-    })
 
-    const unsubMempool = blockchainWebSocket.subscribe('mempool_update', (payload) => {
-      const raw = payload as { mempool?: BackendMempool } & BackendMempool
-      const mempoolRaw = raw.mempool ?? raw
-      setData((prev) =>
-        prev ? { ...prev, mempool: mapMempool(mempoolRaw) } : prev
-      )
-      setLastUpdated(new Date())
-    })
+      const unsubTx = blockchainWebSocket.subscribe('new_transaction', (payload) => {
+        try {
+          const raw = payload as { transaction?: BackendTransaction } & BackendTransaction
+          const txRaw = raw.transaction ?? raw
+          const tx = mapTransaction(txRaw)
+          setData((prev) => {
+            if (!prev) return prev
+            const transactions = [tx, ...prev.transactions.filter((t) => t.hash !== tx.hash)].slice(0, 8)
+            return { ...prev, transactions }
+          })
+          setLastUpdated(new Date())
+        } catch (err) {
+          console.warn('Error processing new_transaction:', err)
+        }
+      })
 
-    return () => {
-      unsubStatus()
-      unsubStats()
-      unsubBlock()
-      unsubTx()
-      unsubMempool()
+      const unsubMempool = blockchainWebSocket.subscribe('mempool_update', (payload) => {
+        try {
+          const raw = payload as { mempool?: BackendMempool } & BackendMempool
+          const mempoolRaw = raw.mempool ?? raw
+          setData((prev) =>
+            prev ? { ...prev, mempool: mapMempool(mempoolRaw) } : prev
+          )
+          setLastUpdated(new Date())
+        } catch (err) {
+          console.warn('Error processing mempool_update:', err)
+        }
+      })
+
+      return () => {
+        try {
+          unsubStatus()
+          unsubStats()
+          unsubBlock()
+          unsubTx()
+          unsubMempool()
+        } catch (err) {
+          console.warn('Error unsubscribing from websocket:', err)
+        }
+      }
+    } catch (err) {
+      console.warn('WebSocket unavailable or connection failed:', err)
+      // Don't block rendering — continue with polling only
     }
   }, [])
 

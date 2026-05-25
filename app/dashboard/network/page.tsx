@@ -51,14 +51,21 @@ export default function NetworkPage() {
 
   useEffect(() => {
     async function fetchData() {
-      setLoading(true)
-      const [statsData, peersData] = await Promise.all([
-        blockchainApi.getNetworkStats(),
-        blockchainApi.getPeers(30),
-      ])
-      setStats(statsData)
-      setPeers(peersData)
-      setLoading(false)
+      try {
+        setLoading(true)
+        const [statsData, peersData] = await Promise.all([
+          blockchainApi.getNetworkStats(),
+          blockchainApi.getPeers(30),
+        ])
+        setStats(statsData || null)
+        setPeers(peersData || [])
+      } catch (err) {
+        console.error('Failed to fetch network data:', err)
+        setStats(null)
+        setPeers([])
+      } finally {
+        setLoading(false)
+      }
     }
     
     fetchData()
@@ -67,17 +74,19 @@ export default function NetworkPage() {
   }, [])
 
   // Calculate peer stats
-  const avgLatency = peers.length > 0 
-    ? Math.round(peers.reduce((sum, p) => sum + p.latency, 0) / peers.length)
+  const list = peers || []
+  const avgLatency = list.length > 0 
+    ? Math.round(list.reduce((sum, p) => sum + (p?.latency ?? 0), 0) / list.length)
     : 0
   
-  const versionDistribution = peers.reduce((acc, peer) => {
-    acc[peer.version] = (acc[peer.version] || 0) + 1
+  const versionDistribution = list.reduce((acc, peer) => {
+    const version = peer?.version ?? 'Unknown'
+    acc[version] = (acc[version] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
-  const countryDistribution = peers.reduce((acc, peer) => {
-    const country = peer.country || 'Unknown'
+  const countryDistribution = list.reduce((acc, peer) => {
+    const country = peer?.country || 'Unknown'
     acc[country] = (acc[country] || 0) + 1
     return acc
   }, {} as Record<string, number>)
