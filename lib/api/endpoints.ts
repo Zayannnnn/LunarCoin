@@ -3,7 +3,9 @@
  * Base URL: NEXT_PUBLIC_API_URL (default https://lunar-backend-1mzo.onrender.com)
  */
 
-const API_PREFIX = '/api/v1'
+import { env } from '@/lib/config/env'
+
+const API_PREFIX = `${env.api.baseUrl}/api/v1`
 
 export const endpoints = {
   health: `${API_PREFIX}/health`,
