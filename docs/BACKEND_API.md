@@ -1,30 +1,19 @@
 # Lunar Python Backend API Contract
 
-LunarScan expects a REST API at `NEXT_PUBLIC_API_URL` (default `https://lunar-backend-1mzo.onrender.com`) and a WebSocket at `NEXT_PUBLIC_WS_URL` (default `wss://lunar-backend-1mzo.onrender.com/ws`).
+LunarScan expects a local REST API at `NEXT_PUBLIC_API_URL` (default `http://127.0.0.1:5000`). WebSocket support is optional.
 
-All REST routes use prefix `/api/v1`. Responses may use **snake_case** (Python) — the frontend maps them automatically.
+The local LunarMiner integration uses these top-level routes. Responses may use **snake_case** (Python) — the frontend maps them automatically.
 
 ## REST Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/v1/health` | Health check |
-| GET | `/api/v1/network/stats` | Network statistics |
-| GET | `/api/v1/blocks?page=1&limit=10` | Paginated blocks |
-| GET | `/api/v1/blocks/{hashOrHeight}` | Single block |
-| GET | `/api/v1/transactions?page=1&limit=10&status=` | Paginated transactions |
-| GET | `/api/v1/transactions/{hash}` | Single transaction |
-| GET | `/api/v1/addresses/{address}` | Address details |
-| GET | `/api/v1/addresses/{address}/transactions` | Address transaction history |
-| GET | `/api/v1/mempool` | Mempool stats + pending txs |
-| GET | `/api/v1/fees` | Fee estimates |
-| GET | `/api/v1/fees/history?hours=24` | Fee history chart |
-| GET | `/api/v1/mining/stats` | Mining statistics |
-| GET | `/api/v1/mining/miners?limit=10` | Top miners |
-| GET | `/api/v1/network/peers?limit=50` | Connected peers |
-| GET | `/api/v1/charts/hashrate?hours=24` | Hash rate history |
-| GET | `/api/v1/charts/difficulty?hours=24` | Difficulty history |
-| GET | `/api/v1/charts/tps?hours=24` | TPS history |
+| GET | `/status` | Miner status |
+| GET | `/wallet` | Local wallet |
+| GET | `/blocks` | Locally mined blocks |
+| GET | `/mining-stats` | Mining statistics |
+| POST | `/start-mining` | Start local mining |
+| POST | `/stop-mining` | Stop local mining |
 
 ### Example: Network Stats
 
@@ -100,7 +89,7 @@ Return either an array or:
 
 ## WebSocket
 
-Connect to `wss://lunar-backend-1mzo.onrender.com/ws` (or `NEXT_PUBLIC_WS_URL` + `/ws`).
+If `NEXT_PUBLIC_WS_URL` is configured, LunarScan can connect to that optional WebSocket. If it is unavailable, the app logs `WebSocket unavailable` and continues polling REST data.
 
 ### Message Format
 

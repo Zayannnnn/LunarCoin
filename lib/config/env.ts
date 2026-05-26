@@ -16,17 +16,17 @@ export const env = {
   },
   api: {
     baseUrl: (() => {
-      const rawUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://lunar-backend-1mzo.onrender.com'
+      const rawUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5000'
       const normalized = rawUrl.replace(/\/$/, '')
-      if (!/^https:\/\//i.test(normalized)) {
-        throw new Error('NEXT_PUBLIC_API_URL must use https://')
+      if (!/^https?:\/\//i.test(normalized)) {
+        throw new Error('NEXT_PUBLIC_API_URL must use http:// or https://')
       }
       return normalized
     })(),
     wsUrl: (() => {
-      const rawWsUrl = process.env.NEXT_PUBLIC_WS_URL ?? 'wss://lunar-backend-1mzo.onrender.com'
-      if (!/^wss:\/\//i.test(rawWsUrl)) {
-        throw new Error('NEXT_PUBLIC_WS_URL must use wss://')
+      const rawWsUrl = process.env.NEXT_PUBLIC_WS_URL ?? ''
+      if (rawWsUrl && !/^wss?:\/\//i.test(rawWsUrl)) {
+        throw new Error('NEXT_PUBLIC_WS_URL must use ws:// or wss://')
       }
       return rawWsUrl
     })(),

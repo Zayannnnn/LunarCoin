@@ -27,7 +27,7 @@ function LoginForm() {
         <div className="flex justify-center">
           <div className="flex items-center gap-3">
             <Image
-              src="/images/lunar-logo.png"
+              src="https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png"
               alt="LunarScan Logo"
               width={48}
               height={48}

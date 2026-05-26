@@ -30,7 +30,7 @@ export function ApiErrorBanner({ error, onRetry, className }: ApiErrorBannerProp
           <p className="text-xs text-muted-foreground mt-0.5">{error.message}</p>
           {error.isNetworkError && (
             <p className="text-xs text-muted-foreground mt-1">
-              Ensure the Python API is running at {process.env.NEXT_PUBLIC_API_URL ?? 'https://lunar-backend-1mzo.onrender.com'}
+              Ensure the LunarMiner API is running at {process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5000'}
             </p>
           )}
         </div>

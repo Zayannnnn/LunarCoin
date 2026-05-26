@@ -64,8 +64,8 @@ export async function apiRequest<T>(
   } = options
 
   const url = buildUrl(path, params)
-  if (!/^https:\/\//i.test(url)) {
-    throw new ApiError('API request must use HTTPS', {
+  if (!/^https?:\/\//i.test(url)) {
+    throw new ApiError('API request must use HTTP or HTTPS', {
       status: 0,
       code: 'INVALID_URL',
       details: url,
@@ -161,4 +161,8 @@ export async function apiRequest<T>(
 
 export function apiGet<T>(path: string, options?: RequestOptions): Promise<T> {
   return apiRequest<T>(path, { ...options, method: 'GET' })
+}
+
+export function apiPost<T>(path: string, options?: RequestOptions): Promise<T> {
+  return apiRequest<T>(path, { ...options, method: 'POST' })
 }

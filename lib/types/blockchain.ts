@@ -40,6 +40,7 @@ export interface Address {
   transactionCount: number
   firstSeen: number
   lastSeen: number
+  minedRewards?: number
 }
 
 export interface NetworkStats {
@@ -86,6 +87,11 @@ export interface MiningStats {
   blockReward: number
   nextHalvingBlock: number
   blocksUntilHalving: number
+  nonce: number
+  currentHash: string
+  totalMinedBlocks: number
+  miningStatus: string
+  balance: number
 }
 
 export interface MinerInfo {

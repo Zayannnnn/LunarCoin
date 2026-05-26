@@ -8,7 +8,7 @@ import {
   LayoutDashboard,
   Blocks,
   ArrowLeftRight,
-  Search,
+  Wallet,
   Layers,
   TrendingUp,
   Pickaxe,
@@ -23,7 +23,7 @@ const navItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/blocks', label: 'Blocks', icon: Blocks },
   { href: '/dashboard/transactions', label: 'Transactions', icon: ArrowLeftRight },
-  { href: '/dashboard/address', label: 'Address', icon: Search },
+  { href: '/dashboard/address', label: 'Wallet', icon: Wallet },
   { href: '/dashboard/mempool', label: 'Mempool', icon: Layers },
   { href: '/dashboard/fees', label: 'Fees', icon: TrendingUp },
   { href: '/dashboard/mining', label: 'Mining', icon: Pickaxe },
@@ -49,7 +49,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
       <div className="flex items-center h-16 px-4 border-b border-sidebar-border">
         <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
           <Image 
-            src="/images/lunar-logo.png" 
+            src="https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png" 
             alt="LunarScan Logo" 
             width={36} 
             height={36} 

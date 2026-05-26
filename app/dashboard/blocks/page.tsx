@@ -17,19 +17,15 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ChevronLeft, ChevronRight, Blocks as BlocksIcon, Clock, Database, Zap } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Blocks as BlocksIcon } from 'lucide-react'
 
 function truncateHash(hash?: string, chars: number = 8): string {
   const s = hash ?? ''
   return `${s.slice(0, chars + 2)}...${s.slice(-chars)}`
 }
 
-function formatTimeAgo(timestamp: number): string {
-  const seconds = Math.floor((Date.now() - timestamp) / 1000)
-  if (seconds < 60) return `${seconds}s ago`
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
-  return `${Math.floor(seconds / 86400)}d ago`
+function formatTimestamp(timestamp: number): string {
+  return new Date(timestamp).toLocaleString()
 }
 
 export default function BlocksPage() {
@@ -45,9 +41,9 @@ export default function BlocksPage() {
     { enabled: true }
   )
 
-  const blocks: Block[] = data?.blocks ?? []
-  const total = data?.total ?? 0
-  const totalPages = Math.ceil(total / limit)
+  const blocks: Block[] = data?.blocks || []
+  const total = data?.total ?? blocks.length
+  const totalPages = Math.max(1, Math.ceil(total / limit))
 
   return (
     <div className="space-y-6">
@@ -60,8 +56,7 @@ export default function BlocksPage() {
         </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="bg-card/50 border-border/50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -71,7 +66,7 @@ export default function BlocksPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              #{blocks[0] && blocks[0].height ? blocks[0].height.toLocaleString() : '-'}
+              #{blocks[0]?.height?.toLocaleString() ?? '-'}
             </div>
           </CardContent>
         </Card>
@@ -79,36 +74,24 @@ export default function BlocksPage() {
         <Card className="bg-card/50 border-border/50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Avg Block Time
+              Rendered Blocks
             </CardTitle>
-            <Clock className="h-4 w-4 text-primary" />
+            <BlocksIcon className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">15.2s</div>
+            <div className="text-2xl font-bold">{blocks.length.toLocaleString()}</div>
           </CardContent>
         </Card>
         
         <Card className="bg-card/50 border-border/50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Avg Block Size
+              Total Blocks
             </CardTitle>
-            <Database className="h-4 w-4 text-primary" />
+            <BlocksIcon className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">98.5 KB</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-card/50 border-border/50">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Block Reward
-            </CardTitle>
-            <Zap className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">6.25 LUNAR</div>
+            <div className="text-2xl font-bold">{total.toLocaleString()}</div>
           </CardContent>
         </Card>
       </div>
@@ -122,10 +105,8 @@ export default function BlocksPage() {
                 <TableRow className="border-border/50 hover:bg-transparent">
                   <TableHead className="text-muted-foreground">Height</TableHead>
                   <TableHead className="text-muted-foreground">Hash</TableHead>
-                  <TableHead className="text-muted-foreground">Age</TableHead>
-                  <TableHead className="text-muted-foreground">Txns</TableHead>
-                  <TableHead className="text-muted-foreground">Miner</TableHead>
-                  <TableHead className="text-muted-foreground">Size</TableHead>
+                  <TableHead className="text-muted-foreground">Nonce</TableHead>
+                  <TableHead className="text-muted-foreground">Timestamp</TableHead>
                   <TableHead className="text-muted-foreground text-right">Reward</TableHead>
                 </TableRow>
               </TableHeader>
@@ -136,14 +117,18 @@ export default function BlocksPage() {
                       <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
                     </TableRow>
                   ))
+                ) : blocks.length === 0 ? (
+                  <TableRow className="border-border/50">
+                    <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                      No locally mined blocks found.
+                    </TableCell>
+                  </TableRow>
                 ) : (
-                  blocks.map((block) => (
+                  (data?.blocks || []).map((block) => (
                     <TableRow 
                       key={block.height} 
                       className={`border-border/50 hover:bg-accent/50 transition-colors ${
@@ -156,19 +141,11 @@ export default function BlocksPage() {
                       <TableCell className="font-mono text-sm text-muted-foreground">
                         {truncateHash(block.hash)}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {formatTimeAgo(block.timestamp)}
+                      <TableCell className="text-muted-foreground tabular-nums">
+                        {block.nonce.toLocaleString()}
                       </TableCell>
-                      <TableCell>
-                        <span className="px-2 py-1 rounded bg-primary/10 text-primary text-xs font-medium">
-                          {block.transactions}
-                        </span>
-                      </TableCell>
-                      <TableCell className="font-mono text-sm text-muted-foreground">
-                        {truncateHash(block.miner, 6)}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {(block.size / 1000).toFixed(1)} KB
+                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                        {formatTimestamp(block.timestamp)}
                       </TableCell>
                       <TableCell className="text-right font-medium text-success">
                         +{block.reward} LUNAR
@@ -183,7 +160,7 @@ export default function BlocksPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between p-4 border-t border-border/50">
             <p className="text-sm text-muted-foreground">
-              Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total.toLocaleString()} blocks
+              Showing {blocks.length ? ((page - 1) * limit) + 1 : 0} to {Math.min(page * limit, total)} of {total.toLocaleString()} blocks
             </p>
             <div className="flex items-center gap-2">
               <Button

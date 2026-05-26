@@ -155,6 +155,11 @@ export function generateMiningStats(): MiningStats {
     blockReward: 6.25,
     nextHalvingBlock: 1050000,
     blocksUntilHalving: 50000,
+    nonce: randomBetween(100000, 999999),
+    currentHash: generateHash(),
+    totalMinedBlocks: randomBetween(1000, 2000),
+    miningStatus: 'mining',
+    balance: randomBetween(10, 500),
   }
 }
 
@@ -252,6 +257,7 @@ export const mockBlockchainApi = {
     const tx = generateMockTransactions(1)[0]
     return tx ? { ...tx, hash } : null
   },
+  getWallet: async () => { await delay(); return generateMockAddress('mock-wallet') },
   getAddress: async (address: string) => { await delay(); return generateMockAddress(address) },
   getAddressTransactions: async (address: string, _page = 1, limit = 10) => {
     await delay()
@@ -265,6 +271,8 @@ export const mockBlockchainApi = {
   getMempool: async () => { await delay(); return generateMempoolData() },
   getFeeEstimates: async () => { await delay(); return generateFeeEstimates() },
   getMiningStats: async () => { await delay(); return generateMiningStats() },
+  startMining: async () => { await delay() },
+  stopMining: async () => { await delay() },
   getTopMiners: async (limit = 10) => { await delay(); return generateTopMiners(limit) },
   getPeers: async (limit = 50) => { await delay(); return generateMockPeers(limit) },
   getHashRateHistory: async (hours = 24) => { await delay(); return generateChartData(hours, 125, 10) },

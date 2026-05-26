@@ -1,101 +1,129 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { blockchainApi } from '@/lib/api/blockchain'
+import type { Address } from '@/lib/types/blockchain'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Search, Wallet } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Check, Coins, Copy, Gift, Wallet } from 'lucide-react'
+
+function truncateAddress(address: string): string {
+  if (!address) return '-'
+  if (address.length <= 24) return address
+  return `${address.slice(0, 12)}...${address.slice(-10)}`
+}
 
 export default function AddressSearchPage() {
-  const router = useRouter()
-  const [address, setAddress] = useState('')
-  const [error, setError] = useState('')
+  const [wallet, setWallet] = useState<Address | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [offline, setOffline] = useState(false)
+  const [copied, setCopied] = useState(false)
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    const trimmed = address.trim()
-    if (!trimmed) {
-      setError('Please enter an address')
-      return
+  useEffect(() => {
+    async function fetchWallet() {
+      try {
+        setLoading(true)
+        const data = await blockchainApi.getWallet()
+        setWallet(data || null)
+        setOffline(false)
+      } catch (err) {
+        console.error('Failed to fetch wallet:', err)
+        setWallet(null)
+        setOffline(true)
+      } finally {
+        setLoading(false)
+      }
     }
-    
-    // Basic validation - should start with 0x and be 42 chars
-    if (!trimmed.startsWith('0x') || trimmed.length !== 42) {
-      setError('Invalid address format. Address should start with 0x and be 42 characters.')
-      return
-    }
-    
-    router.push(`/dashboard/address/${trimmed}`)
+
+    fetchWallet()
+  }, [])
+
+  const handleCopy = async () => {
+    if (!wallet?.address) return
+    await navigator.clipboard.writeText(wallet.address)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
-
-  // Example addresses for quick testing
-  const exampleAddresses = [
-    '0x742d35Cc6634C0532925a3b844Bc9e7595f2bD87',
-    '0x1234567890abcdef1234567890abcdef12345678',
-    '0xabcdef1234567890abcdef1234567890abcdef12',
-  ]
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Address Lookup</h1>
+        <h1 className="text-2xl font-bold text-foreground">Wallet</h1>
         <p className="text-muted-foreground mt-1">
-          Search for any address on Lunar Chain
+          Local LunarMiner wallet balance and rewards
         </p>
       </div>
 
-      {/* Search Card */}
-      <Card className="bg-card/50 border-border/50 max-w-2xl">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Wallet className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <CardTitle className="text-lg">Address Search</CardTitle>
-              <CardDescription>Enter a wallet address to view its balance and transaction history</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleSearch} className="flex gap-3">
-            <div className="flex-1">
-              <Input
-                type="text"
-                placeholder="0x..."
-                value={address}
-                onChange={(e) => { setAddress(e.target.value); setError(''); }}
-                className="bg-input/50 border-border/50 font-mono"
-              />
-              {error && <p className="text-sm text-destructive mt-2">{error}</p>}
-            </div>
-            <Button type="submit" className="shrink-0">
-              <Search className="h-4 w-4 mr-2" />
-              Search
-            </Button>
-          </form>
-
-          <div className="pt-4 border-t border-border/50">
-            <p className="text-sm text-muted-foreground mb-3">Try an example address:</p>
-            <div className="flex flex-wrap gap-2">
-              {exampleAddresses.map((addr) => (
-                <Button
-                  key={addr}
-                  variant="outline"
-                  size="sm"
-                  className="font-mono text-xs border-border/50 hover:border-primary/50"
-                  onClick={() => setAddress(addr)}
-                >
-                  {addr.slice(0, 6)}...{addr.slice(-4)}
+      {loading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Skeleton className="h-[150px] lg:col-span-3" />
+          {[...Array(2)].map((_, i) => (
+            <Skeleton key={i} className="h-[120px]" />
+          ))}
+        </div>
+      ) : offline ? (
+        <Card className="bg-card/50 border-border/50 max-w-2xl">
+          <CardContent className="py-12 text-center">
+            <Wallet className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-semibold">Miner Offline</h2>
+            <p className="text-sm text-muted-foreground mt-2">
+              Start the local backend at http://127.0.0.1:5000 to load wallet data.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <Card className="bg-card/50 border-border/50 card-glow max-w-4xl">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                  <Wallet className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Wallet Address</CardTitle>
+                  <CardDescription>Returned by the local miner backend</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="font-mono text-sm text-muted-foreground break-all">
+                  {wallet?.address || '-'}
+                </p>
+                <Button variant="outline" size="sm" onClick={handleCopy} disabled={!wallet?.address}>
+                  {copied ? <Check className="h-4 w-4 mr-2 text-success" /> : <Copy className="h-4 w-4 mr-2" />}
+                  {truncateAddress(wallet?.address ?? '')}
                 </Button>
-              ))}
-            </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl">
+            <Card className="bg-card/50 border-border/50">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Balance</CardTitle>
+                <Coins className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{(wallet?.balance ?? 0).toFixed(4)}</div>
+                <p className="text-xs text-muted-foreground">LUNAR</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card/50 border-border/50">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Mined Rewards</CardTitle>
+                <Gift className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-success">{(wallet?.minedRewards ?? wallet?.totalReceived ?? 0).toFixed(4)}</div>
+                <p className="text-xs text-muted-foreground">LUNAR</p>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </>
+      )}
     </div>
   )
 }

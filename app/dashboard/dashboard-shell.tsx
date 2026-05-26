@@ -8,7 +8,7 @@ import type { User } from '@supabase/supabase-js'
 
 interface DashboardShellProps {
   children: React.ReactNode
-  user: User
+  user: User | null
 }
 
 export function DashboardShell({ children, user }: DashboardShellProps) {

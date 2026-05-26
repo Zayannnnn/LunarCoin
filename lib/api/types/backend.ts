@@ -50,6 +50,9 @@ export interface BackendTransaction {
 export interface BackendAddress {
   address: string
   balance: number
+  mined_rewards?: number
+  minedRewards?: number
+  rewards?: number
   total_received?: number
   totalReceived?: number
   total_sent?: number
@@ -114,10 +117,26 @@ export interface BackendFeeEstimate {
 }
 
 export interface BackendMiningStats {
+  hashrate?: string | number
+  hash_rate?: string | number
+  hashRate?: string | number
+  network_hash_rate?: string | number
+  networkHashRate?: string | number
+  nonce?: number
+  current_hash?: string
+  currentHash?: string
+  total_mined_blocks?: number
+  totalMinedBlocks?: number
+  total_blocks_mined?: number
+  totalBlocksMined?: number
+  mining_status?: string | boolean
+  miningStatus?: string | boolean
+  is_mining?: boolean
+  isMining?: boolean
+  difficulty?: number
+  balance?: number
   current_difficulty?: number
   currentDifficulty?: number
-  network_hash_rate?: string
-  networkHashRate?: string
   avg_block_time?: number
   avgBlockTime?: number
   blocks_last_24h?: number

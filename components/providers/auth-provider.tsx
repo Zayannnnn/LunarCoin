@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { isSupabaseConfigured } from '@/lib/config/env'
 import type { Session, User } from '@supabase/supabase-js'
 
 interface AuthContextValue {
@@ -24,10 +25,15 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
-  const supabase = useMemo(() => createClient(), [])
+  const [loading, setLoading] = useState(isSupabaseConfigured())
+  const supabase = useMemo(() => (isSupabaseConfigured() ? createClient() : null), [])
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
+
     supabase.auth.getSession().then(({ data: { session: initial } }) => {
       setSession(initial)
       setUser(initial?.user ?? null)
@@ -46,6 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase])
 
   const signInWithGoogle = useCallback(async () => {
+    if (!supabase) return
+
     const redirectTo =
       process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
       (process.env.NEXT_PUBLIC_SITE_URL
@@ -59,6 +67,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase])
 
   const signOut = useCallback(async () => {
+    if (!supabase) return
+
     await supabase.auth.signOut()
     window.location.href = '/auth/login'
   }, [supabase])

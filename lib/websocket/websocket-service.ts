@@ -45,6 +45,7 @@ class BlockchainWebSocketService {
   private intentionalClose = false
   private status: WsConnectionStatus = 'disconnected'
   private refCount = 0
+  private warnedUnavailable = false
 
   get connectionStatus(): WsConnectionStatus {
     return this.status
@@ -94,13 +95,22 @@ class BlockchainWebSocketService {
 
   private openSocket(): void {
     if (typeof WebSocket === 'undefined') return
+    if (!env.api.wsUrl) {
+      if (!this.warnedUnavailable) {
+        console.warn('WebSocket unavailable')
+        this.warnedUnavailable = true
+      }
+      this.setStatus('disconnected')
+      return
+    }
 
     this.setStatus(this.reconnectAttempts > 0 ? 'reconnecting' : 'connecting')
 
     try {
       this.socket = new WebSocket(resolveWsUrl())
     } catch {
-      this.scheduleReconnect()
+      console.warn('WebSocket unavailable')
+      this.setStatus('disconnected')
       return
     }
 
@@ -123,13 +133,14 @@ class BlockchainWebSocketService {
     }
 
     this.socket.onerror = () => {
+      console.warn('WebSocket unavailable')
       this.emit('error', { message: 'WebSocket error' })
     }
 
     this.socket.onclose = () => {
       this.socket = null
       this.emit('disconnected', {})
-      if (!this.intentionalClose) {
+      if (!this.intentionalClose && env.api.wsUrl) {
         this.scheduleReconnect()
       } else {
         this.setStatus('disconnected')

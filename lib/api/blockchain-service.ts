@@ -3,7 +3,7 @@
  */
 
 import { env } from '@/lib/config/env'
-import { apiGet } from '@/lib/api/http-client'
+import { apiGet, apiPost } from '@/lib/api/http-client'
 import { endpoints } from '@/lib/api/endpoints'
 import { mockBlockchainApi } from '@/lib/api/mock/blockchain-mock'
 import {
@@ -54,6 +54,7 @@ export type TransactionFilter = 'all' | 'pending' | 'confirmed' | 'failed'
 
 export interface BlockchainApi {
   getNetworkStats(): Promise<NetworkStats>
+  getWallet(): Promise<Address>
   getBlocks(page?: number, limit?: number): Promise<{ blocks: Block[]; total: number }>
   getBlock(hashOrHeight: string | number): Promise<Block | null>
   getTransactions(
@@ -71,6 +72,8 @@ export interface BlockchainApi {
   getMempool(): Promise<MempoolData>
   getFeeEstimates(): Promise<FeeEstimate[]>
   getMiningStats(): Promise<MiningStats>
+  startMining(): Promise<void>
+  stopMining(): Promise<void>
   getTopMiners(limit?: number): Promise<MinerInfo[]>
   getPeers(limit?: number): Promise<Peer[]>
   getHashRateHistory(hours?: number): Promise<ChartDataPoint[]>
@@ -83,6 +86,11 @@ const realBlockchainApi: BlockchainApi = {
   async getNetworkStats() {
     const raw = await apiGet<BackendNetworkStats>(endpoints.networkStats)
     return mapNetworkStats(raw)
+  },
+
+  async getWallet() {
+    const raw = await apiGet<BackendAddress>(endpoints.wallet)
+    return mapAddress(raw)
   },
 
   async getBlocks(page = 1, limit = 10) {
@@ -160,6 +168,14 @@ const realBlockchainApi: BlockchainApi = {
   async getMiningStats() {
     const raw = await apiGet<BackendMiningStats>(endpoints.miningStats)
     return mapMiningStats(raw)
+  },
+
+  async startMining() {
+    await apiPost<unknown>(endpoints.startMining)
+  },
+
+  async stopMining() {
+    await apiPost<unknown>(endpoints.stopMining)
   },
 
   async getTopMiners(limit = 10) {

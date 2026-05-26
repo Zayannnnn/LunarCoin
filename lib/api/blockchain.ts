@@ -18,6 +18,11 @@ export const blockchainApi: BlockchainApi = {
 		return realBlockchainApi.getNetworkStats()
 	},
 
+	async getWallet() {
+		if (env.api.useMock) return mockBlockchainApi.getAddress('mock-wallet')
+		return realBlockchainApi.getWallet()
+	},
+
 	async getBlocks(page?: number, limit?: number) {
 		if (env.api.useMock) return mockBlockchainApi.getBlocks(page, limit)
 		return realBlockchainApi.getBlocks(page, limit)
@@ -61,6 +66,16 @@ export const blockchainApi: BlockchainApi = {
 	async getMiningStats() {
 		if (env.api.useMock) return mockBlockchainApi.getMiningStats()
 		return realBlockchainApi.getMiningStats()
+	},
+
+	async startMining() {
+		if (env.api.useMock) return
+		return realBlockchainApi.startMining()
+	},
+
+	async stopMining() {
+		if (env.api.useMock) return
+		return realBlockchainApi.stopMining()
 	},
 
 	async getTopMiners(limit?: number) {

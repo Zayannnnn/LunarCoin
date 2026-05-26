@@ -9,7 +9,9 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { error } = supabase
+      ? await supabase.auth.exchangeCodeForSession(code)
+      : { error: new Error('Supabase is not configured') }
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`)
     }
