@@ -231,3 +231,22 @@ export interface BackendMiningLogsResponse {
   logs: BackendMiningLog[]
 }
 
+export interface BackendWalletAddressInfo {
+  address: string
+  wallet_id: string
+  created_at: string
+  balance: number
+}
+
+export interface BackendWalletHistoryItem {
+  type: string
+  amount: number
+  timestamp: string
+  block: number
+}
+
+export interface BackendWalletHistoryResponse {
+  history: BackendWalletHistoryItem[]
+  total_rewards: number
+}
+

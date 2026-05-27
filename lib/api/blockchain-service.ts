@@ -23,6 +23,8 @@ import {
   normalizeHex,
   mapLiveMiningStats,
   mapMiningLog,
+  mapWalletAddressInfo,
+  mapWalletHistoryItem,
 } from '@/lib/api/mappers'
 import type {
   Block,
@@ -38,6 +40,8 @@ import type {
   MempoolData,
   LiveMiningStats,
   MiningLog,
+  WalletAddressInfo,
+  WalletHistoryItem,
 } from '@/lib/types/blockchain'
 import type {
   BackendBlock,
@@ -55,6 +59,8 @@ import type {
   BackendLiveMiningStats,
   BackendMiningLog,
   BackendMiningLogsResponse,
+  BackendWalletAddressInfo,
+  BackendWalletHistoryResponse,
 } from '@/lib/api/types/backend'
 
 export type TransactionFilter = 'all' | 'pending' | 'confirmed' | 'failed'
@@ -81,6 +87,8 @@ export interface BlockchainApi {
   getMiningStats(): Promise<MiningStats>
   getLiveMiningStats(): Promise<LiveMiningStats>
   getMiningLogs(): Promise<MiningLog[]>
+  getWalletAddressInfo(): Promise<WalletAddressInfo>
+  getWalletHistory(): Promise<WalletHistoryItem[]>
   startMining(): Promise<void>
   stopMining(): Promise<void>
   getTopMiners(limit?: number): Promise<MinerInfo[]>
@@ -204,6 +212,16 @@ const realBlockchainApi: BlockchainApi = {
   async getMiningLogs() {
     const raw = await apiGet<BackendMiningLogsResponse>(endpoints.miningLogs)
     return (raw?.logs || []).map(mapMiningLog)
+  },
+
+  async getWalletAddressInfo() {
+    const raw = await apiGet<BackendWalletAddressInfo>(endpoints.walletAddress)
+    return mapWalletAddressInfo(raw)
+  },
+
+  async getWalletHistory() {
+    const raw = await apiGet<BackendWalletHistoryResponse>(endpoints.walletHistory)
+    return (raw?.history || []).map(mapWalletHistoryItem)
   },
 
   async startMining() {

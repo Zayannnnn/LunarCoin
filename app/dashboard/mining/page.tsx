@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { blockchainApi } from '@/lib/api/blockchain'
-import type { LiveMiningStats, MiningLog } from '@/lib/types/blockchain'
+import type { LiveMiningStats, MiningLog, WalletAddressInfo, WalletHistoryItem } from '@/lib/types/blockchain'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -22,6 +22,8 @@ import {
   Clock,
   Flame,
   TrendingUp,
+  Copy,
+  Check,
 } from 'lucide-react'
 import {
   AreaChart,
@@ -41,7 +43,7 @@ import {
   axisProps,
 } from '@/components/dashboard/chart-theme'
 
-// Extend global window for lunarDesktop APIs exposed by Electron
+// Extend global window for Electron lunarDesktop preload APIs
 declare global {
   interface Window {
     lunarDesktop?: {
@@ -75,8 +77,23 @@ function formatUptime(seconds: number): string {
   return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 }
 
+function formatDateTime(isoString: string): string {
+  if (!isoString) return '-'
+  try {
+    const d = new Date(isoString)
+    const dateStr = d.toLocaleDateString([], { month: '2-digit', day: '2-digit' })
+    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
+    return `${dateStr} ${timeStr}`
+  } catch {
+    return isoString
+  }
+}
+
 export default function MiningPage() {
   const [liveStats, setLiveStats] = useState<LiveMiningStats | null>(null)
+  const [walletInfo, setWalletInfo] = useState<WalletAddressInfo | null>(null)
+  const [walletHistory, setWalletHistory] = useState<WalletHistoryItem[]>([])
+  
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [offline, setOffline] = useState(false)
@@ -86,6 +103,7 @@ export default function MiningPage() {
   // Real-time states
   const [logs, setLogs] = useState<MiningLog[]>([])
   const [notifications, setNotifications] = useState<Array<{ id: number; text: string }>>([])
+  const [copied, setCopied] = useState(false)
   
   // Rolling histories
   const [hashrateHistory, setHashrateHistory] = useState<Array<{ time: string; hashrate: number }>>([])
@@ -146,16 +164,25 @@ export default function MiningPage() {
     }
   }
 
+  // Copy wallet address to clipboard helper
+  const handleCopyAddress = () => {
+    if (walletInfo?.address) {
+      navigator.clipboard.writeText(walletInfo.address)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
   // Poll live stats and logs every 1 second
   useEffect(() => {
     let isActive = true
 
     const poll = async () => {
       try {
+        // Fetch stats
         const data = await blockchainApi.getLiveMiningStats()
         if (!isActive) return
         
-        // Ensure safe defaults
         const stats = data || ({} as LiveMiningStats)
         setLiveStats(stats)
         setOffline(false)
@@ -199,7 +226,6 @@ export default function MiningPage() {
       } catch (err) {
         console.error('Failed to fetch live mining telemetry:', err)
         if (isActive) {
-          // Keep frontend performant and safe from crashing if API is offline
           setOffline(true)
         }
       } finally {
@@ -208,14 +234,31 @@ export default function MiningPage() {
         }
       }
 
+      // Fetch wallet address
+      try {
+        const walletData = await blockchainApi.getWalletAddressInfo()
+        if (isActive && walletData) {
+          setWalletInfo(walletData)
+        }
+      } catch (e) {
+        console.error('Failed to fetch persistent wallet address info:', e)
+      }
+
+      // Fetch wallet history
+      try {
+        const historyData = await blockchainApi.getWalletHistory()
+        if (isActive && historyData) {
+          setWalletHistory(historyData)
+        }
+      } catch (e) {
+        console.error('Failed to fetch wallet history Ledger:', e)
+      }
+
       // Fetch logs
       try {
         const logsData = await blockchainApi.getMiningLogs()
         if (!isActive) return
-        
-        // Ensure safe logs default rendering
-        const finalLogs = logsData || []
-        setLogs(finalLogs)
+        setLogs(logsData || [])
       } catch (e) {
         console.error('Failed to fetch mining logs:', e)
       }
@@ -524,9 +567,11 @@ export default function MiningPage() {
       ) : (
         <>
           {/* Main Status Header Panel */}
-          <Card className={`bg-card/50 border-border/50 overflow-hidden transition-all duration-500 ${miningActive ? 'card-glow border-primary/40 shadow-lg shadow-primary/10' : ''}`}>
-            <CardContent className="p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+            
+            {/* Engine status Card */}
+            <Card className={`bg-card/50 border-border/50 overflow-hidden transition-all duration-500 xl:col-span-1 ${miningActive ? 'card-glow border-primary/40 shadow-lg shadow-primary/10' : ''}`}>
+              <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-lg bg-primary/10 border border-primary/20 transition-all ${miningActive ? 'glow-primary animate-pulse scale-105' : ''}`}>
                     {miningActive ? (
@@ -541,18 +586,57 @@ export default function MiningPage() {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Engine State</p>
-                    <h2 className={`text-2xl font-extrabold capitalize ${miningActive ? 'text-primary' : 'text-muted-foreground'}`}>
+                    <h2 className={`text-xl font-extrabold capitalize ${miningActive ? 'text-primary' : 'text-muted-foreground'}`}>
                       {miningActive ? 'Mining Running' : 'Miner Stopped'}
                     </h2>
                   </div>
                 </div>
-                <div className="font-mono text-xs text-muted-foreground/80 break-all sm:text-right">
-                  <span className="text-[10px] text-muted-foreground block uppercase font-sans font-bold">Wallet Credit Balance</span>
-                  <span className="text-primary font-bold text-sm">{(liveStats?.balance ?? 0).toFixed(4)} LUNAR</span>
+              </CardContent>
+            </Card>
+
+            {/* PERSISTENT LOCAL WALLET HUB */}
+            <Card className="bg-card/50 border-border/50 card-glow overflow-hidden xl:col-span-2">
+              <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 h-full">
+                <div className="space-y-1.5 flex-grow">
+                  <div className="flex items-center gap-2">
+                    <Coins className="h-4 w-4 text-cyan-400" />
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Account Address (Storage Key)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 w-full">
+                    <span className="font-mono text-xs text-foreground bg-black/40 border border-border/10 px-2.5 py-1.5 rounded select-all break-all tracking-wide flex-grow max-w-[280px] truncate md:max-w-none">
+                      {walletInfo?.address || '0x0000000000000000'}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-primary hover:text-primary-foreground hover:bg-primary/20 shrink-0"
+                      onClick={handleCopyAddress}
+                    >
+                      {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+
+                <div className="grid grid-cols-3 gap-4 md:text-right shrink-0 md:pl-4 md:border-l md:border-border/10">
+                  <div>
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Wallet ID</p>
+                    <p className="font-mono text-xs font-bold text-primary mt-0.5">{walletInfo?.walletId || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Balance</p>
+                    <p className="font-mono text-xs font-bold text-green-400 mt-0.5">{(walletInfo?.balance ?? 0).toFixed(4)} LUN</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Genesis</p>
+                    <p className="font-mono text-[10px] text-foreground mt-0.5">
+                      {walletInfo?.createdAt ? new Date(walletInfo.createdAt).toLocaleDateString() : '-'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
 
           {/* TELEMETRY STATS GRID (8 Cards) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -605,14 +689,14 @@ export default function MiningPage() {
               </div>
             </Card>
 
-            {/* 5. Blocks Mined */}
+            {/* 5. Lifetime Blocks Mined */}
             <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
-                  <Award className="h-3.5 w-3.5 text-primary" /> Blocks Mined
+                  <Award className="h-3.5 w-3.5 text-primary" /> Blocks Mined (Lifetime)
                 </p>
                 <div className="text-xl font-bold text-green-400 mt-2">
-                  {liveStats?.blocks_mined ?? 0}
+                  {walletHistory.length}
                 </div>
               </div>
             </Card>
@@ -631,11 +715,11 @@ export default function MiningPage() {
               </div>
             </Card>
 
-            {/* 7. Mining Uptime */}
+            {/* 7. Mining Uptime (Session) */}
             <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
-                  <Activity className="h-3.5 w-3.5 text-primary" /> Mining Uptime
+                  <Activity className="h-3.5 w-3.5 text-primary" /> Uptime (Session)
                 </p>
                 <div className="text-xl font-bold mt-2">
                   {formatUptime(liveStats?.uptime ?? 0)}
@@ -810,36 +894,84 @@ export default function MiningPage() {
               </CardContent>
             </Card>
 
-            {/* Live Scrolling Logs Terminal */}
-            <Card className="bg-card/50 border-border/50 flex flex-col h-[340px]">
-              <CardHeader className="pb-2 border-b border-b-border/10 bg-muted/20">
-                <CardTitle className="text-sm font-medium text-primary flex items-center gap-2">
-                  <Terminal className="h-4 w-4" />
-                  Live Mining Logs
-                </CardTitle>
-              </CardHeader>
-              <CardContent 
-                className="p-4 flex-grow bg-black/90 font-mono text-[11px] overflow-y-auto scrollbar-thin scrollbar-thumb-muted" 
-                ref={terminalContainerRef}
-              >
-                {logs.length === 0 ? (
-                  <div className="text-muted-foreground italic">
-                    {miningActive 
-                      ? '[MINER] Connecting to local hardware daemon...' 
-                      : '[MINER] Console ready. Toggle mining engine to begin streaming attempts...'}
-                  </div>
-                ) : (
-                  (logs || []).map((log, i) => (
-                    <div key={i} className={`text-[10px] font-mono my-1 leading-relaxed ${
-                      log.type === 'success' ? 'text-green-400 font-bold border-l border-green-500 pl-1.5' :
-                      log.type === 'attempt' ? 'text-primary/70' : 'text-yellow-400/90'
-                    }`}>
-                      {log.message}
+            {/* Right-hand side stack: Logs & History ledger */}
+            <div className="flex flex-col gap-4 h-[340px]">
+              
+              {/* Live Logs Terminal */}
+              <Card className="bg-card/50 border-border/50 flex flex-col h-[160px]">
+                <CardHeader className="py-2 border-b border-b-border/10 bg-muted/20 flex flex-row items-center justify-between">
+                  <CardTitle className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider">
+                    <Terminal className="h-4 w-4" />
+                    Miner Logs
+                  </CardTitle>
+                </CardHeader>
+                <CardContent 
+                  className="p-3 flex-grow bg-black/90 font-mono text-[9px] overflow-y-auto scrollbar-thin scrollbar-thumb-muted" 
+                  ref={terminalContainerRef}
+                >
+                  {logs.length === 0 ? (
+                    <div className="text-muted-foreground italic">
+                      {miningActive 
+                        ? '[MINER] Connecting to local hardware daemon...' 
+                        : '[MINER] Console ready. Toggle mining engine to begin...'}
                     </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
+                  ) : (
+                    (logs || []).map((log, i) => (
+                      <div key={i} className={`text-[9px] font-mono my-0.5 leading-relaxed ${
+                        log.type === 'success' ? 'text-green-400 font-bold border-l border-green-500 pl-1.5' :
+                        log.type === 'attempt' ? 'text-primary/70' : 'text-yellow-400/90'
+                      }`}>
+                        {log.message}
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Mined Block Ledger (History Table) */}
+              <Card className="bg-card/50 border-border/50 flex flex-col h-[164px]">
+                <CardHeader className="py-2 border-b border-b-border/10 bg-muted/20 flex flex-row items-center justify-between">
+                  <CardTitle className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider">
+                    <Award className="h-4 w-4 text-cyan-400 animate-pulse" />
+                    Block Ledger
+                  </CardTitle>
+                  <span className="text-[9px] font-mono text-muted-foreground bg-black/40 border border-border/10 px-1.5 py-0.5 rounded">{walletHistory.length} lifetime</span>
+                </CardHeader>
+                <CardContent className="p-0 flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-muted bg-black/35 font-mono text-[10px]">
+                  {walletHistory.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-muted-foreground italic p-4 text-center leading-normal">
+                      No historical reward records resolved yet on this node.
+                    </div>
+                  ) : (
+                    <table className="w-full border-collapse">
+                      <thead className="bg-muted/10 text-muted-foreground text-left uppercase sticky top-0 border-b border-border/10 text-[8px] tracking-wider select-none z-10 backdrop-blur-md">
+                        <tr>
+                          <th className="py-1.5 px-2">Block</th>
+                          <th className="py-1.5 px-2">Timestamp</th>
+                          <th className="py-1.5 px-2 text-right">Reward</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/5">
+                        {(walletHistory || []).map((tx, i) => (
+                          <tr key={i} className="hover:bg-primary/5 transition-colors group">
+                            <td className="py-1 px-2 font-bold text-primary group-hover:text-primary-foreground">
+                              #{tx.block}
+                            </td>
+                            <td className="py-1 px-2 text-muted-foreground/80">
+                              {formatDateTime(tx.timestamp)}
+                            </td>
+                            <td className="py-1 px-2 text-right text-green-400 font-bold">
+                              +{tx.amount.toFixed(1)} LUN
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </CardContent>
+              </Card>
+
+            </div>
 
           </div>
         </>

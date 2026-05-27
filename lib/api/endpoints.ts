@@ -25,6 +25,8 @@ export const endpoints = {
   miningStats: `${API_PREFIX}/mining-stats`,
   liveMiningStats: `${API_PREFIX}/live-mining-stats`,
   miningLogs: `${API_PREFIX}/mining-logs`,
+  walletHistory: `${API_PREFIX}/wallet-history`,
+  walletAddress: `${API_PREFIX}/wallet-address`,
   startMining: `${API_PREFIX}/start-mining`,
   stopMining: `${API_PREFIX}/stop-mining`,
   miningMiners: `${API_PREFIX}/mining/miners`,

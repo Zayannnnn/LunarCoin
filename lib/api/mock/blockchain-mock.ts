@@ -16,6 +16,8 @@ import type {
   MempoolData,
   LiveMiningStats,
   MiningLog,
+  WalletAddressInfo,
+  WalletHistoryItem,
 } from '@/lib/types/blockchain'
 
 function generateHash(): string {
@@ -275,6 +277,8 @@ export const mockBlockchainApi = {
   getMiningStats: async () => { await delay(); return generateMiningStats() },
   getLiveMiningStats: async () => { await delay(); return generateLiveMiningStats() },
   getMiningLogs: async () => { await delay(); return generateMiningLogs() },
+  getWalletAddressInfo: async () => { await delay(); return generateMockWalletAddressInfo() },
+  getWalletHistory: async () => { await delay(); return generateMockWalletHistory() },
   startMining: async () => { await delay() },
   stopMining: async () => { await delay() },
   getTopMiners: async (limit = 10) => { await delay(); return generateTopMiners(limit) },
@@ -326,5 +330,28 @@ export function generateMiningLogs(): MiningLog[] {
       message: '[MINER] Reward payout: +1 LUNAR credited!'
     }
   ]
+}
+
+export function generateMockWalletAddressInfo(): WalletAddressInfo {
+  return {
+    address: '0x2FB007CC0E53F181',
+    walletId: 'W-A4B7C9D2E1F0',
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+    balance: 204.0
+  }
+}
+
+export function generateMockWalletHistory(): WalletHistoryItem[] {
+  const history: WalletHistoryItem[] = []
+  const now = Date.now()
+  for (let i = 0; i < 10; i++) {
+    history.push({
+      type: 'mining_reward',
+      amount: 1.0,
+      timestamp: new Date(now - i * 3600000 * 2).toISOString(),
+      block: 100 - i
+    })
+  }
+  return history
 }
 

@@ -12,6 +12,8 @@ import type {
   MempoolData,
   LiveMiningStats,
   MiningLog,
+  WalletAddressInfo,
+  WalletHistoryItem,
 } from '@/lib/types/blockchain'
 import type {
   BackendBlock,
@@ -28,6 +30,8 @@ import type {
   PaginatedResponse,
   BackendLiveMiningStats,
   BackendMiningLog,
+  BackendWalletAddressInfo,
+  BackendWalletHistoryItem,
 } from '@/lib/api/types/backend'
 
 /** Normalize hash/address to 0x-prefixed hex when value is hex; pass through otherwise */
@@ -264,6 +268,24 @@ export function mapMiningLog(raw: BackendMiningLog): MiningLog {
     timestamp: String(raw?.timestamp ?? ''),
     type: String(raw?.type ?? ''),
     message: String(raw?.message ?? ''),
+  }
+}
+
+export function mapWalletAddressInfo(raw: BackendWalletAddressInfo): WalletAddressInfo {
+  return {
+    address: raw?.address ? normalizeHex(raw.address) : '',
+    walletId: String(raw?.wallet_id ?? ''),
+    createdAt: String(raw?.created_at ?? ''),
+    balance: Number(raw?.balance ?? 0),
+  }
+}
+
+export function mapWalletHistoryItem(raw: BackendWalletHistoryItem): WalletHistoryItem {
+  return {
+    type: String(raw?.type ?? ''),
+    amount: Number(raw?.amount ?? 0),
+    timestamp: String(raw?.timestamp ?? ''),
+    block: Number(raw?.block ?? 0),
   }
 }
 

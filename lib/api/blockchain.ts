@@ -78,6 +78,16 @@ export const blockchainApi: BlockchainApi = {
 		return realBlockchainApi.getMiningLogs()
 	},
 
+	async getWalletAddressInfo() {
+		if (env.api.useMock) return mockBlockchainApi.getWalletAddressInfo()
+		return realBlockchainApi.getWalletAddressInfo()
+	},
+
+	async getWalletHistory() {
+		if (env.api.useMock) return mockBlockchainApi.getWalletHistory()
+		return realBlockchainApi.getWalletHistory()
+	},
+
 	async startMining() {
 		if (env.api.useMock) return
 		return realBlockchainApi.startMining()

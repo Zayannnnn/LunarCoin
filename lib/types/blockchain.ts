@@ -147,3 +147,17 @@ export interface MiningLog {
   message: string
 }
 
+export interface WalletAddressInfo {
+  address: string
+  walletId: string
+  createdAt: string
+  balance: number
+}
+
+export interface WalletHistoryItem {
+  type: string
+  amount: number
+  timestamp: string
+  block: number
+}
+
