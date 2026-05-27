@@ -23,6 +23,8 @@ export const endpoints = {
   feeEstimates: `${API_PREFIX}/fees`,
   feeHistory: `${API_PREFIX}/fees/history`,
   miningStats: `${API_PREFIX}/mining-stats`,
+  liveMiningStats: `${API_PREFIX}/live-mining-stats`,
+  miningLogs: `${API_PREFIX}/mining-logs`,
   startMining: `${API_PREFIX}/start-mining`,
   stopMining: `${API_PREFIX}/stop-mining`,
   miningMiners: `${API_PREFIX}/mining/miners`,
