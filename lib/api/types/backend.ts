@@ -16,6 +16,8 @@ export interface BackendBlock {
   miner_address?: string
   size?: number
   reward?: number
+  mining_reward?: number
+  miningReward?: number
   difficulty?: number
   nonce?: number
   gas_used?: number
@@ -117,6 +119,8 @@ export interface BackendFeeEstimate {
 }
 
 export interface BackendMiningStats {
+  mining?: boolean
+  running?: boolean
   hashrate?: string | number
   hash_rate?: string | number
   hashRate?: string | number
@@ -141,6 +145,12 @@ export interface BackendMiningStats {
   avgBlockTime?: number
   blocks_last_24h?: number
   blocksLast24h?: number
+  blocks_mined_this_session?: number
+  blocksMinedThisSession?: number
+  total_blocks?: number
+  totalBlocks?: number
+  total_hashes?: number
+  totalHashes?: number
   total_miners_active?: number
   totalMinersActive?: number
   block_reward?: number

@@ -96,7 +96,7 @@ const realBlockchainApi: BlockchainApi = {
   async getBlocks(page = 1, limit = 10) {
     const raw = await apiGet<PaginatedResponse<BackendBlock> | BackendBlock[]>(
       endpoints.blocks,
-      { params: { page, limit } }
+      { params: { page, limit, start: (page - 1) * limit } }
     )
     const list = extractList(raw, 'blocks')
     const total = extractTotal(raw, list.length)
@@ -166,8 +166,25 @@ const realBlockchainApi: BlockchainApi = {
   },
 
   async getMiningStats() {
-    const raw = await apiGet<BackendMiningStats>(endpoints.miningStats)
-    return mapMiningStats(raw)
+    const [statsRaw, statusRaw, walletRaw] = await Promise.all([
+      apiGet<BackendMiningStats>(endpoints.miningStats),
+      apiGet<BackendMiningStats>(endpoints.status).catch(() => ({} as BackendMiningStats)),
+      apiGet<BackendAddress>(endpoints.wallet).catch(() => ({} as BackendAddress)),
+    ])
+    const totalBlocks = statusRaw.total_blocks ?? statusRaw.totalBlocks ?? 0
+    const blocksRaw = await apiGet<PaginatedResponse<BackendBlock> | BackendBlock[]>(endpoints.blocks, {
+      params: { start: Math.max(0, totalBlocks - 1), limit: 1 },
+    }).catch(() => ({ blocks: [] } as PaginatedResponse<BackendBlock>))
+    const blocks = extractList(blocksRaw, 'blocks')
+    const latestBlock = blocks[blocks.length - 1]
+
+    return mapMiningStats({
+      ...statusRaw,
+      ...statsRaw,
+      balance: statsRaw.balance ?? statusRaw.balance ?? walletRaw.balance,
+      current_hash: statsRaw.current_hash ?? statsRaw.currentHash ?? latestBlock?.hash,
+      nonce: statsRaw.nonce ?? statsRaw.total_hashes ?? statsRaw.totalHashes ?? latestBlock?.nonce,
+    })
   },
 
   async startMining() {

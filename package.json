@@ -1,12 +1,67 @@
 {
-  "name": "my-project",
+  "name": "lunar-coin-blockchain-explorer",
+  "productName": "LunarCoin Desktop Miner",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "electron": "cross-env ELECTRON_RENDERER_MODE=dev electron .",
+    "desktop": "npm run build && cross-env ELECTRON_RENDERER_MODE=start electron .",
+    "package": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:win": "npm run build && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.lunarcoin.desktopminer",
+    "productName": "LunarCoin Desktop Miner",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "app/**/*",
+      "components/**/*",
+      "electron/**/*",
+      "hooks/**/*",
+      "lib/**/*",
+      "public/**/*",
+      "styles/**/*",
+      ".next/**/*",
+      "next.config.mjs",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../lunar-miner",
+        "to": "lunar-miner",
+        "filter": [
+          "**/*",
+          "!frontend/**/*",
+          "!.git/**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.finance",
+      "identity": null,
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "public/images/lunar-logo.png"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "public/images/lunar-logo.png"
+    }
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -66,9 +121,14 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^42.2.0",
+    "electron-builder": "^26.8.1",
     "postcss": "^8.5",
     "tailwindcss": "^4.2.0",
     "tw-animate-css": "1.3.3",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "wait-on": "^9.0.10"
   }
 }

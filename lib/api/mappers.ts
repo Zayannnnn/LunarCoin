@@ -63,7 +63,7 @@ export function mapBlock(raw: BackendBlock): Block {
     transactions: txCount(raw),
     miner: normalizeHex(raw.miner ?? raw.miner_address ?? ''),
     size: raw.size ?? 0,
-    reward: raw.reward ?? 0,
+    reward: raw.reward ?? raw.mining_reward ?? raw.miningReward ?? 1,
     difficulty: raw.difficulty ?? 0,
     nonce: raw.nonce ?? 0,
     gasUsed: raw.gas_used ?? raw.gasUsed ?? 0,
@@ -103,12 +103,12 @@ export function mapAddress(raw: BackendAddress): Address {
   return {
     address: raw.address ? normalizeHex(raw.address) : '',
     balance: Number(raw.balance ?? 0),
-    totalReceived: Number(raw.total_received ?? raw.totalReceived ?? raw.mined_rewards ?? raw.minedRewards ?? raw.rewards ?? 0),
+    totalReceived: Number(raw.total_received ?? raw.totalReceived ?? raw.mined_rewards ?? raw.minedRewards ?? raw.rewards ?? raw.balance ?? 0),
     totalSent: Number(raw.total_sent ?? raw.totalSent ?? 0),
     transactionCount: raw.transaction_count ?? raw.transactionCount ?? 0,
     firstSeen: toTimestampMs(raw.first_seen ?? raw.firstSeen ?? Date.now()),
     lastSeen: toTimestampMs(raw.last_seen ?? raw.lastSeen ?? Date.now()),
-    minedRewards: Number(raw.mined_rewards ?? raw.minedRewards ?? raw.rewards ?? 0),
+    minedRewards: Number(raw.mined_rewards ?? raw.minedRewards ?? raw.rewards ?? raw.balance ?? 0),
   }
 }
 
@@ -155,21 +155,21 @@ export function mapFeeEstimate(raw: BackendFeeEstimate): FeeEstimate {
 
 export function mapMiningStats(raw: BackendMiningStats): MiningStats {
   const hashRate = raw.hashrate ?? raw.hash_rate ?? raw.hashRate ?? raw.network_hash_rate ?? raw.networkHashRate ?? '0 H/s'
-  const isMining = raw.is_mining ?? raw.isMining
+  const isMining = raw.is_mining ?? raw.isMining ?? raw.mining ?? raw.running
   const status = raw.mining_status ?? raw.miningStatus ?? (isMining ? 'mining' : 'stopped')
   const totalMinedBlocks =
-    raw.total_mined_blocks ?? raw.totalMinedBlocks ?? raw.total_blocks_mined ?? raw.totalBlocksMined ?? raw.blocks_last_24h ?? raw.blocksLast24h ?? 0
+    raw.total_mined_blocks ?? raw.totalMinedBlocks ?? raw.total_blocks_mined ?? raw.totalBlocksMined ?? raw.total_blocks ?? raw.totalBlocks ?? raw.blocks_last_24h ?? raw.blocksLast24h ?? 0
 
   return {
     currentDifficulty: raw.difficulty ?? raw.current_difficulty ?? raw.currentDifficulty ?? 0,
     networkHashRate: typeof hashRate === 'number' ? `${hashRate.toLocaleString()} H/s` : hashRate,
     avgBlockTime: raw.avg_block_time ?? raw.avgBlockTime ?? 15,
-    blocksLast24h: raw.blocks_last_24h ?? raw.blocksLast24h ?? 0,
+    blocksLast24h: raw.blocks_last_24h ?? raw.blocksLast24h ?? raw.blocks_mined_this_session ?? raw.blocksMinedThisSession ?? 0,
     totalMinersActive: raw.total_miners_active ?? raw.totalMinersActive ?? 0,
     blockReward: raw.block_reward ?? raw.blockReward ?? 0,
     nextHalvingBlock: raw.next_halving_block ?? raw.nextHalvingBlock ?? 0,
     blocksUntilHalving: raw.blocks_until_halving ?? raw.blocksUntilHalving ?? 0,
-    nonce: raw.nonce ?? 0,
+    nonce: raw.nonce ?? raw.total_hashes ?? raw.totalHashes ?? 0,
     currentHash: raw.current_hash ?? raw.currentHash ?? '',
     totalMinedBlocks,
     miningStatus: String(status),
