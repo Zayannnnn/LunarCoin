@@ -21,6 +21,8 @@ import {
   extractList,
   extractTotal,
   normalizeHex,
+  mapLiveMiningStats,
+  mapMiningLog,
 } from '@/lib/api/mappers'
 import type {
   Block,
@@ -34,6 +36,8 @@ import type {
   ChartDataPoint,
   FeeChartData,
   MempoolData,
+  LiveMiningStats,
+  MiningLog,
 } from '@/lib/types/blockchain'
 import type {
   BackendBlock,
@@ -48,6 +52,9 @@ import type {
   BackendFeeChartPoint,
   BackendMempool,
   PaginatedResponse,
+  BackendLiveMiningStats,
+  BackendMiningLog,
+  BackendMiningLogsResponse,
 } from '@/lib/api/types/backend'
 
 export type TransactionFilter = 'all' | 'pending' | 'confirmed' | 'failed'
@@ -72,6 +79,8 @@ export interface BlockchainApi {
   getMempool(): Promise<MempoolData>
   getFeeEstimates(): Promise<FeeEstimate[]>
   getMiningStats(): Promise<MiningStats>
+  getLiveMiningStats(): Promise<LiveMiningStats>
+  getMiningLogs(): Promise<MiningLog[]>
   startMining(): Promise<void>
   stopMining(): Promise<void>
   getTopMiners(limit?: number): Promise<MinerInfo[]>
@@ -185,6 +194,16 @@ const realBlockchainApi: BlockchainApi = {
       current_hash: statsRaw.current_hash ?? statsRaw.currentHash ?? latestBlock?.hash,
       nonce: statsRaw.nonce ?? statsRaw.total_hashes ?? statsRaw.totalHashes ?? latestBlock?.nonce,
     })
+  },
+
+  async getLiveMiningStats() {
+    const raw = await apiGet<BackendLiveMiningStats>(endpoints.liveMiningStats)
+    return mapLiveMiningStats(raw)
+  },
+
+  async getMiningLogs() {
+    const raw = await apiGet<BackendMiningLogsResponse>(endpoints.miningLogs)
+    return (raw?.logs || []).map(mapMiningLog)
   },
 
   async startMining() {

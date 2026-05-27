@@ -68,6 +68,16 @@ export const blockchainApi: BlockchainApi = {
 		return realBlockchainApi.getMiningStats()
 	},
 
+	async getLiveMiningStats() {
+		if (env.api.useMock) return mockBlockchainApi.getLiveMiningStats()
+		return realBlockchainApi.getLiveMiningStats()
+	},
+
+	async getMiningLogs() {
+		if (env.api.useMock) return mockBlockchainApi.getMiningLogs()
+		return realBlockchainApi.getMiningLogs()
+	},
+
 	async startMining() {
 		if (env.api.useMock) return
 		return realBlockchainApi.startMining()

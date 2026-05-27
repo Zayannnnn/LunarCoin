@@ -10,6 +10,8 @@ import type {
   ChartDataPoint,
   FeeChartData,
   MempoolData,
+  LiveMiningStats,
+  MiningLog,
 } from '@/lib/types/blockchain'
 import type {
   BackendBlock,
@@ -24,6 +26,8 @@ import type {
   BackendFeeChartPoint,
   BackendMempool,
   PaginatedResponse,
+  BackendLiveMiningStats,
+  BackendMiningLog,
 } from '@/lib/api/types/backend'
 
 /** Normalize hash/address to 0x-prefixed hex when value is hex; pass through otherwise */
@@ -236,3 +240,30 @@ export function extractTotal(response: PaginatedResponse<unknown> | unknown[], f
     fallback
   )
 }
+
+export function mapLiveMiningStats(raw: BackendLiveMiningStats): LiveMiningStats {
+  return {
+    mining: Boolean(raw?.mining),
+    nonce: Number(raw?.nonce ?? 0),
+    current_nonce: Number(raw?.nonce ?? 0),
+    hash: raw?.hash ? normalizeHex(raw.hash) : '',
+    current_hash: raw?.hash ? normalizeHex(raw.hash) : '',
+    hashrate: Number(raw?.hashrate ?? 0),
+    total_hashes: Number(raw?.total_hashes ?? 0),
+    estimated_block_time: Number(raw?.estimated_block_time ?? 0),
+    blocks_per_minute: Number(raw?.blocks_per_minute ?? 0),
+    uptime: Number(raw?.uptime ?? 0),
+    blocks_mined: Number(raw?.blocks_mined ?? 0),
+    difficulty: Number(raw?.difficulty ?? 0),
+    balance: Number(raw?.balance ?? 0),
+  }
+}
+
+export function mapMiningLog(raw: BackendMiningLog): MiningLog {
+  return {
+    timestamp: String(raw?.timestamp ?? ''),
+    type: String(raw?.type ?? ''),
+    message: String(raw?.message ?? ''),
+  }
+}
+

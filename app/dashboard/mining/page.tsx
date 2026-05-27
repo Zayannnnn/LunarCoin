@@ -2,14 +2,46 @@
 
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { blockchainApi } from '@/lib/api/blockchain'
-import type { MiningStats } from '@/lib/types/blockchain'
+import type { LiveMiningStats, MiningLog } from '@/lib/types/blockchain'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Activity, Award, Coins, Gauge, Hash, Pickaxe, Play, RotateCw, Square, Zap, Cpu, Terminal, Clock } from 'lucide-react'
+import {
+  Activity,
+  Award,
+  Coins,
+  Gauge,
+  Hash,
+  Pickaxe,
+  Play,
+  RotateCw,
+  Square,
+  Zap,
+  Cpu,
+  Terminal,
+  Clock,
+  Flame,
+  TrendingUp,
+} from 'lucide-react'
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts'
+import {
+  CHART_COLORS,
+  chartAnimation,
+  tooltipStyle,
+  axisProps,
+} from '@/components/dashboard/chart-theme'
 
-// Define the shape of window.lunarDesktop exposed via Electron preload.js
-// BEGINNER CONCEPT: Extending the Window interface ensures TypeScript doesn't throw errors when accessing Electron APIs.
+// Extend global window for lunarDesktop APIs exposed by Electron
 declare global {
   interface Window {
     lunarDesktop?: {
@@ -35,72 +67,54 @@ function truncateHash(hash: string): string {
   return `${hash.slice(0, 14)}...${hash.slice(-10)}`
 }
 
+function formatUptime(seconds: number): string {
+  if (!seconds || seconds <= 0) return '00:00:00'
+  const hrs = Math.floor(seconds / 3600)
+  const mins = Math.floor((seconds % 3600) / 60)
+  const secs = Math.floor(seconds % 60)
+  return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+}
+
 export default function MiningPage() {
-  const [stats, setStats] = useState<MiningStats | null>(null)
+  const [liveStats, setLiveStats] = useState<LiveMiningStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [offline, setOffline] = useState(false)
   const [flashActive, setFlashActive] = useState(false)
-
-  // Direct DOM refs to bypass standard React virtual DOM diffing for high-speed updates (60fps)
-  // BEGINNER CONCEPT: React state renders can lag when updated 60 times a second. Direct DOM manipulation is extremely fast.
-  const nonceRef = useRef<HTMLDivElement>(null)
-  const hashRef = useRef<HTMLDivElement>(null)
-  const timerRef = useRef<HTMLSpanElement>(null)
-  const consoleRef = useRef<HTMLDivElement>(null)
-  const cpuValueRef = useRef<HTMLSpanElement>(null)
-  const cpuBarRef = useRef<HTMLDivElement>(null)
-  const totalHashesValueRef = useRef<HTMLDivElement>(null)
+  const [activeTab, setActiveTab] = useState<'stream' | 'charts'>('stream')
   
+  // Real-time states
+  const [logs, setLogs] = useState<MiningLog[]>([])
+  const [notifications, setNotifications] = useState<Array<{ id: number; text: string }>>([])
+  
+  // Rolling histories
+  const [hashrateHistory, setHashrateHistory] = useState<Array<{ time: string; hashrate: number }>>([])
+  const [activityHistory, setActivityHistory] = useState<Array<{ time: string; delta: number }>>([])
+
+  // DOM Refs for high-speed numeric shuffles (60fps visual updates)
+  const visualNonceRef = useRef<HTMLDivElement>(null)
+  const visualHashRef = useRef<HTMLDivElement>(null)
+  const visualTimerRef = useRef<HTMLSpanElement>(null)
+  const visualCpuValueRef = useRef<HTMLSpanElement>(null)
+  const visualCpuBarRef = useRef<HTMLDivElement>(null)
+  const visualTotalHashesValueRef = useRef<HTMLDivElement>(null)
+
+  // Card Refs
+  const cardNonceRef = useRef<HTMLDivElement>(null)
+  const cardHashRef = useRef<HTMLDivElement>(null)
+  const cardTotalHashesRef = useRef<HTMLDivElement>(null)
+
   const matrixCanvasRef = useRef<HTMLCanvasElement>(null)
-  const lastMinedBlocksRef = useRef<number>(-1)
-  const totalHashesSessionRef = useRef<number>(0)
+  const terminalContainerRef = useRef<HTMLDivElement>(null)
+
+  const lastBlocksMinedRef = useRef<number>(-1)
+  const lastTotalHashesRef = useRef<number>(-1)
 
   const miningActive = useMemo(() => {
-    const status = stats?.miningStatus.toLowerCase() ?? ''
-    return status === 'true' || status.includes('mining') || status.includes('active') || status.includes('running')
-  }, [stats])
+    return liveStats?.mining ?? false
+  }, [liveStats])
 
-  const fetchMiningStats = useCallback(async () => {
-    try {
-      const data = await blockchainApi.getMiningStats()
-      setStats(data || null)
-      setOffline(false)
-    } catch (err) {
-      console.error('Failed to fetch mining data:', err)
-      setStats(null)
-      setOffline(true)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchMiningStats()
-    const interval = setInterval(fetchMiningStats, 2000)
-    return () => clearInterval(interval)
-  }, [fetchMiningStats])
-
-  const handleMiningToggle = async () => {
-    try {
-      setActionLoading(true)
-      if (miningActive) {
-        await blockchainApi.stopMining()
-      } else {
-        await blockchainApi.startMining()
-      }
-      await fetchMiningStats()
-    } catch (err) {
-      console.error('Failed to update mining status:', err)
-      setOffline(true)
-    } finally {
-      setActionLoading(false)
-      setLoading(false)
-    }
-  }
-
-  // Synthesize a sci-fi cyberpunk block discovery chime using Web Audio API
-  // BEGINNER CONCEPT: Creating tones on the fly ensures zero file-not-found asset loading issues.
+  // Play sci-fi notification sound chime when block discovered
   const playChime = () => {
     try {
       const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext
@@ -132,167 +146,110 @@ export default function MiningPage() {
     }
   }
 
-  // Trigger discovery effects: neon flash, chime sound, block added console log
-  const triggerBlockDiscovery = useCallback((hash: string, reward: number) => {
-    setFlashActive(true)
-    playChime()
-    
-    if (consoleRef.current) {
-      const logEl = document.createElement('div')
-      logEl.className = 'text-xs text-green-400 font-bold border border-green-500/30 bg-green-950/20 p-2.5 my-2 rounded animate-pulse font-mono'
-      logEl.innerHTML = `
-        <div>[MINER] ========================================================</div>
-        <div>[MINER] ⭐ BLOCK FOUND AT HEIGHT ${stats?.totalMinedBlocks ? stats.totalMinedBlocks + 1 : 'N/A'}!</div>
-        <div>[MINER] Seal Fingerprint: ${hash}</div>
-        <div>[MINER] Reward payout: +${reward.toFixed(4)} LUNAR added to wallet</div>
-        <div>[MINER] Verification checklist: 100% OK (VALID)</div>
-        <div>[MINER] ========================================================</div>
-      `
-      consoleRef.current.appendChild(logEl)
-      
-      // Prevent console log buffer bloat
-      while (consoleRef.current.childNodes.length > 100) {
-        consoleRef.current.removeChild(consoleRef.current.firstChild!)
-      }
-      consoleRef.current.scrollTop = consoleRef.current.scrollHeight
-    }
-    
-    setTimeout(() => {
-      setFlashActive(false)
-    }, 1500)
-  }, [stats?.totalMinedBlocks])
-
-  // Monitor total mined blocks count changes to trigger discovery chime
+  // Poll live stats and logs every 1 second
   useEffect(() => {
-    if (stats) {
-      const currentMined = stats.totalMinedBlocks ?? 0
-      if (lastMinedBlocksRef.current !== -1 && currentMined > lastMinedBlocksRef.current) {
-        triggerBlockDiscovery(stats.currentHash || '00000000', stats.blockReward || 1.0)
-      }
-      lastMinedBlocksRef.current = currentMined
-    }
-  }, [stats, triggerBlockDiscovery])
+    let isActive = true
 
-  // Direct fast loop for rendering live nonce, candidate hash, timer, and CPU load
-  useEffect(() => {
-    let animationFrameId: number
-    let lastUpdate = 0
-    let currentNonce = stats?.nonce || 0
-    let lastConsoleTime = 0
-    let lastCpuTime = 0
-    let sessionStart = Date.now()
+    const poll = async () => {
+      try {
+        const data = await blockchainApi.getLiveMiningStats()
+        if (!isActive) return
+        
+        // Ensure safe defaults
+        const stats = data || ({} as LiveMiningStats)
+        setLiveStats(stats)
+        setOffline(false)
 
-    const nonceEl = nonceRef.current
-    const hashEl = hashRef.current
-    const timerEl = timerRef.current
-    const consoleEl = consoleRef.current
-    const cpuValueEl = cpuValueRef.current
-    const cpuBarEl = cpuBarRef.current
-    const totalHashesValueEl = totalHashesValueRef.current
-
-    if (!miningActive) {
-      // Clear indicators when mining stops
-      if (cpuValueEl) cpuValueEl.innerText = '0%'
-      if (cpuBarEl) cpuBarEl.style.width = '0%'
-      if (timerEl) timerEl.innerText = '00:00:00'
-      return
-    }
-
-    const run = (timestamp: number) => {
-      // Throttle numeric calculations and log feeds to ~30 FPS to save resources
-      if (timestamp - lastUpdate > 33) {
-        lastUpdate = timestamp
-
-        // Adjust speed based on actual hashes/sec from API
-        const delta = Math.floor(Math.random() * 85) + 18
-        currentNonce += delta
-        totalHashesSessionRef.current += delta
-
-        if (nonceEl) {
-          nonceEl.innerText = currentNonce.toLocaleString()
+        // Block discovered notification triggers
+        const currentMined = stats.blocks_mined || 0
+        if (lastBlocksMinedRef.current !== -1 && currentMined > lastBlocksMinedRef.current) {
+          const newId = Date.now()
+          setNotifications(prev => [...prev, { id: newId, text: '+1 LUNAR' }])
+          setFlashActive(true)
+          playChime()
+          setTimeout(() => {
+            setFlashActive(false)
+          }, 1500)
+          setTimeout(() => {
+            setNotifications(prev => prev.filter(n => n.id !== newId))
+          }, 3000)
         }
+        lastBlocksMinedRef.current = currentMined
 
-        if (totalHashesValueEl) {
-          totalHashesValueEl.innerText = totalHashesSessionRef.current.toLocaleString()
+        // Work delta calculation for the Activity Bar Chart
+        const currentTotal = stats.total_hashes || 0
+        let delta = 0
+        if (lastTotalHashesRef.current !== -1) {
+          delta = Math.max(0, currentTotal - lastTotalHashesRef.current)
         }
+        lastTotalHashesRef.current = currentTotal
 
-        // Rapidly shuffle hex string representing candidate hashes
-        if (hashEl) {
-          const hex = '0123456789abcdef'
-          let randomHash = '0000' // Target starts with zero matches
-          for (let i = 4; i < 64; i++) {
-            randomHash += hex[Math.floor(Math.random() * 16)]
-          }
-          hashEl.innerText = randomHash
+        // Accumulate rolling chart histories
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        if (stats.mining) {
+          setHashrateHistory(prev => {
+            const updated = [...prev, { time: timeStr, hashrate: stats.hashrate || 0 }]
+            return updated.slice(-15)
+          })
+          setActivityHistory(prev => {
+            const updated = [...prev, { time: timeStr, delta }]
+            return updated.slice(-15)
+          })
         }
-
-        // Update elapsed timer
-        if (timerEl) {
-          const elapsedSecs = Math.floor((Date.now() - sessionStart) / 1000)
-          const hrs = String(Math.floor(elapsedSecs / 3600)).padStart(2, '0')
-          const mins = String(Math.floor((elapsedSecs % 3600) / 60)).padStart(2, '0')
-          const secs = String(elapsedSecs % 60).padStart(2, '0')
-          timerEl.innerText = `${hrs}:${mins}:${secs}`
+      } catch (err) {
+        console.error('Failed to fetch live mining telemetry:', err)
+        if (isActive) {
+          // Keep frontend performant and safe from crashing if API is offline
+          setOffline(true)
         }
-
-        // Add periodic logs to the console
-        if (Date.now() - lastConsoleTime > 220) {
-          lastConsoleTime = Date.now()
-          if (consoleEl) {
-            const logEl = document.createElement('div')
-            logEl.className = 'text-xs text-primary/70 font-mono'
-            
-            const rand = Math.random()
-            if (rand < 0.82) {
-              const hex = '0123456789abcdef'
-              let testHash = '0000'
-              for (let i = 4; i < 16; i++) {
-                testHash += hex[Math.floor(Math.random() * 16)]
-              }
-              logEl.innerText = `[MINER] Trying nonce ${currentNonce}... Hash: ${testHash}...`
-            } else if (rand < 0.93) {
-              logEl.className = 'text-xs text-yellow-500 font-mono font-semibold'
-              logEl.innerText = `[MINER] Puzzle target check: matching difficulty mask [${'0'.repeat(stats?.currentDifficulty || 4)}]...`
-            } else {
-              logEl.className = 'text-xs text-cyan-400 font-mono'
-              logEl.innerText = `[MINER] Connection verified. Current pool credit: ${stats?.balance || 0} LUNAR`
-            }
-
-            consoleEl.appendChild(logEl)
-
-            while (consoleEl.childNodes.length > 100) {
-              consoleEl.removeChild(consoleEl.firstChild!)
-            }
-            consoleEl.scrollTop = consoleEl.scrollHeight
-          }
-        }
-
-        // Query/Update CPU status
-        if (Date.now() - lastCpuTime > 600) {
-          lastCpuTime = Date.now()
-          let cpuPercent = 0
-          if (window.lunarDesktop?.getCPUUsage) {
-            const usage = window.lunarDesktop.getCPUUsage()
-            cpuPercent = Math.min(100, Math.round(usage.percentCPUUsage))
-          } else {
-            // Simulated local oscillation for fallback browser environment
-            cpuPercent = Math.floor(Math.random() * 12) + 48 // 48-60%
-          }
-          if (cpuValueEl) cpuValueEl.innerText = `${cpuPercent}%`
-          if (cpuBarEl) cpuBarEl.style.width = `${cpuPercent}%`
+      } finally {
+        if (isActive) {
+          setLoading(false)
         }
       }
 
-      animationFrameId = requestAnimationFrame(run)
+      // Fetch logs
+      try {
+        const logsData = await blockchainApi.getMiningLogs()
+        if (!isActive) return
+        
+        // Ensure safe logs default rendering
+        const finalLogs = logsData || []
+        setLogs(finalLogs)
+      } catch (e) {
+        console.error('Failed to fetch mining logs:', e)
+      }
     }
 
-    animationFrameId = requestAnimationFrame(run)
+    poll()
+    const interval = setInterval(poll, 1000)
     return () => {
-      cancelAnimationFrame(animationFrameId)
+      isActive = false
+      clearInterval(interval)
     }
-  }, [miningActive, stats])
+  }, [])
 
-  // Matrix Hexadecimal Scrolling Canvas animation loop
+  // Toggle API engine state
+  const handleMiningToggle = async () => {
+    try {
+      setActionLoading(true)
+      if (miningActive) {
+        await blockchainApi.stopMining()
+      } else {
+        await blockchainApi.startMining()
+      }
+      const data = await blockchainApi.getLiveMiningStats()
+      setLiveStats(data || null)
+      setOffline(false)
+    } catch (err) {
+      console.error('Failed to update mining status:', err)
+      setOffline(true)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  // Matrix canvas background scroll
   useEffect(() => {
     const canvas = matrixCanvasRef.current
     if (!canvas) return
@@ -317,7 +274,6 @@ export default function MiningPage() {
 
     const draw = (timestamp: number) => {
       if (!miningActive) {
-        // Clear canvas and draw offline backdrop
         ctx.fillStyle = 'rgba(5, 7, 13, 0.95)'
         ctx.fillRect(0, 0, canvas.width, canvas.height)
         
@@ -328,14 +284,13 @@ export default function MiningPage() {
         return
       }
 
-      // Restrict matrix calculations to ~20 FPS for low power profile
       if (timestamp - lastDraw > 50) {
         lastDraw = timestamp
 
-        ctx.fillStyle = 'rgba(5, 7, 13, 0.15)' // Smooth fade trail
+        ctx.fillStyle = 'rgba(5, 7, 13, 0.15)'
         ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-        ctx.fillStyle = 'rgba(0, 240, 255, 0.5)' // Neon Cyan matrix character drops
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.5)'
         ctx.font = `${fontSize}px monospace`
         ctx.textAlign = 'left'
 
@@ -364,16 +319,107 @@ export default function MiningPage() {
     }
   }, [miningActive])
 
-  // Average block sealing time calculation
-  const displayAvgBlockTime = useMemo(() => {
-    const s = stats?.avgBlockTime ?? 0
-    if (s <= 0) return '60s (Default)'
-    return `${s.toFixed(1)}s`
-  }, [stats?.avgBlockTime])
+  // Direct fast loop for rendering live nonce and candidate hex shuffles at ~30 FPS
+  useEffect(() => {
+    let animationFrameId: number
+    let lastUpdate = 0
+    let currentNonce = liveStats?.nonce || 0
+    let currentTotalHashes = liveStats?.total_hashes || 0
+    let lastCpuTime = 0
+    let sessionStart = Date.now() - (liveStats?.uptime ? liveStats.uptime * 1000 : 0)
+
+    const nonceEl = visualNonceRef.current
+    const hashEl = visualHashRef.current
+    const timerEl = visualTimerRef.current
+    const cpuValueEl = visualCpuValueRef.current
+    const cpuBarEl = visualCpuBarRef.current
+    const totalHashesValueEl = visualTotalHashesValueRef.current
+
+    const cardNonceEl = cardNonceRef.current
+    const cardHashEl = cardHashRef.current
+    const cardTotalHashesEl = cardTotalHashesRef.current
+
+    if (!miningActive) {
+      if (cpuValueEl) cpuValueEl.innerText = '0%'
+      if (cpuBarEl) cpuBarEl.style.width = '0%'
+      if (timerEl) timerEl.innerText = '00:00:00'
+      return
+    }
+
+    // Sync on updates
+    currentNonce = liveStats?.nonce || 0
+    currentTotalHashes = liveStats?.total_hashes || 0
+    sessionStart = Date.now() - (liveStats?.uptime ? liveStats.uptime * 1000 : 0)
+
+    const run = (timestamp: number) => {
+      if (timestamp - lastUpdate > 33) {
+        const elapsedSinceLastUpdate = timestamp - lastUpdate
+        lastUpdate = timestamp
+
+        const hashrate = liveStats?.hashrate || 0
+        const delta = Math.max(1, Math.floor((hashrate * elapsedSinceLastUpdate) / 1000))
+
+        currentNonce += delta
+        currentTotalHashes += delta
+
+        if (nonceEl) nonceEl.innerText = currentNonce.toLocaleString()
+        if (cardNonceEl) cardNonceEl.innerText = currentNonce.toLocaleString()
+
+        if (totalHashesValueEl) totalHashesValueEl.innerText = currentTotalHashes.toLocaleString()
+        if (cardTotalHashesEl) cardTotalHashesEl.innerText = currentTotalHashes.toLocaleString()
+
+        if (hashEl || cardHashEl) {
+          const hex = '0123456789abcdef'
+          let randomHash = '0000'
+          for (let i = 4; i < 64; i++) {
+            randomHash += hex[Math.floor(Math.random() * 16)]
+          }
+          if (hashEl) hashEl.innerText = randomHash
+          if (cardHashEl) cardHashEl.innerText = truncateHash(randomHash)
+        }
+
+        if (timerEl) {
+          const elapsedSecs = Math.floor((Date.now() - sessionStart) / 1000)
+          const hrs = String(Math.floor(elapsedSecs / 3600)).padStart(2, '0')
+          const mins = String(Math.floor((elapsedSecs % 3600) / 60)).padStart(2, '0')
+          const secs = String(elapsedSecs % 60).padStart(2, '0')
+          timerEl.innerText = `${hrs}:${mins}:${secs}`
+        }
+
+        // CPU Diagnostics query
+        if (Date.now() - lastCpuTime > 600) {
+          lastCpuTime = Date.now()
+          let cpuPercent = 0
+          if (window.lunarDesktop?.getCPUUsage) {
+            const usage = window.lunarDesktop.getCPUUsage()
+            cpuPercent = Math.min(100, Math.round(usage.percentCPUUsage))
+          } else {
+            cpuPercent = Math.floor(Math.random() * 12) + 48
+          }
+          if (cpuValueEl) cpuValueEl.innerText = `${cpuPercent}%`
+          if (cpuBarEl) cpuBarEl.style.width = `${cpuPercent}%`
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(run)
+    }
+
+    animationFrameId = requestAnimationFrame(run)
+    return () => {
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [miningActive, liveStats])
+
+  // Terminal autoscroll hook
+  useEffect(() => {
+    if (terminalContainerRef.current) {
+      terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight
+    }
+  }, [logs])
 
   return (
-    <div className={`space-y-6 transition-all duration-300 ${flashActive ? 'neon-flash-active' : ''}`}>
-      {/* Inline styles for local neon discovery glows */}
+    <div className={`space-y-6 transition-all duration-300 relative ${flashActive ? 'neon-flash-active' : ''}`}>
+      {/* CSS Keyframes for neon visual effects */}
       <style>{`
         @keyframes neon-flash-pulse {
           0% {
@@ -390,14 +436,56 @@ export default function MiningPage() {
         .neon-flash-active {
           animation: neon-flash-pulse 1.5s ease-out;
         }
+        @keyframes slideUpFade {
+          0% { opacity: 0; transform: translate(-50%, 40px); }
+          12% { opacity: 1; transform: translate(-50%, 0px); }
+          85% { opacity: 1; transform: translate(-50%, 0px); }
+          100% { opacity: 0; transform: translate(-50%, -40px); }
+        }
+        .animate-slide-up-fade {
+          animation: slideUpFade 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
       `}</style>
 
+      {/* Floating "+1 LUNAR" block discovery banner notifications */}
+      <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none space-y-2">
+        {(notifications || []).map((notif) => (
+          <div
+            key={notif.id}
+            className="bg-black/90 border border-green-500/60 shadow-[0_0_25px_rgba(34,197,94,0.4)] text-green-400 font-extrabold px-6 py-3.5 rounded-lg flex items-center gap-3 text-sm uppercase tracking-wider animate-slide-up-fade"
+          >
+            <img 
+              src="https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png" 
+              alt="LunarCoin" 
+              className="h-5 w-5 animate-pulse rounded-full"
+            />
+            <span>{notif.text} Block Found!</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Header and Control Bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Mining Control Room</h1>
-          <p className="text-muted-foreground mt-1">
-            Real-time local LunarMiner diagnostic HUD
-          </p>
+        <div className="flex items-center gap-3">
+          <img 
+            src="https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png" 
+            alt="LunarCoin Logo" 
+            className="h-9 w-9 shadow-[0_0_12px_rgba(0,240,255,0.3)] rounded-full border border-primary/25"
+          />
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl font-bold text-foreground">Mining Control Room</h1>
+              {miningActive && (
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500 shadow-[0_0_10px_#00f0ff]"></span>
+                </span>
+              )}
+            </div>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              Real-time local LunarMiner diagnostic HUD
+            </p>
+          </div>
         </div>
         <Button
           onClick={handleMiningToggle}
@@ -418,9 +506,9 @@ export default function MiningPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(Array.from({ length: 6 }) || []).map((_, i) => (
-            <Skeleton key={i} className="h-[120px]" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {(Array.from({ length: 8 }) || []).map((_, i) => (
+            <Skeleton key={i} className="h-[100px]" />
           ))}
         </div>
       ) : offline ? (
@@ -441,7 +529,15 @@ export default function MiningPage() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-lg bg-primary/10 border border-primary/20 transition-all ${miningActive ? 'glow-primary animate-pulse scale-105' : ''}`}>
-                    <Pickaxe className={`h-7 w-7 text-primary ${miningActive ? 'animate-bounce' : ''}`} />
+                    {miningActive ? (
+                      <img 
+                        src="https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png" 
+                        alt="LunarCoin" 
+                        className="h-7 w-7 animate-spin [animation-duration:10s]"
+                      />
+                    ) : (
+                      <Pickaxe className="h-7 w-7 text-primary" />
+                    )}
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Engine State</p>
@@ -451,164 +547,297 @@ export default function MiningPage() {
                   </div>
                 </div>
                 <div className="font-mono text-xs text-muted-foreground/80 break-all sm:text-right">
-                  <span className="text-[10px] text-muted-foreground block uppercase font-sans font-bold">Latest Chain Fingerprint</span>
-                  {stats?.currentHash ? truncateHash(stats.currentHash) : 'N/A'}
+                  <span className="text-[10px] text-muted-foreground block uppercase font-sans font-bold">Wallet Credit Balance</span>
+                  <span className="text-primary font-bold text-sm">{(liveStats?.balance ?? 0).toFixed(4)} LUNAR</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* REAL-TIME VISUALIZER GRID */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* TELEMETRY STATS GRID (8 Cards) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             
-            {/* Hexadecimal Scrolling Engine stream card */}
-            <Card className="bg-card/50 border-border/50 lg:col-span-2 overflow-hidden flex flex-col h-[280px]">
-              <CardHeader className="pb-2 flex flex-row items-center justify-between border-b border-border/10 bg-muted/20">
-                <CardTitle className="text-sm font-medium text-primary flex items-center gap-2">
-                  <Zap className={`h-4 w-4 ${miningActive ? 'animate-pulse text-cyan-400' : ''}`} />
-                  LIVE MINING STREAM VISUALIZER
-                </CardTitle>
-                <div className="flex items-center gap-4 text-xs font-mono">
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span ref={timerRef} className="font-bold text-foreground">00:00:00</span>
-                  </div>
+            {/* 1. Current Nonce */}
+            <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <Hash className="h-3.5 w-3.5 text-primary" /> Current Nonce
+                </p>
+                <div className="text-xl font-bold font-mono text-primary mt-2 break-all" ref={cardNonceRef}>
+                  {(liveStats?.nonce ?? 0).toLocaleString()}
                 </div>
-              </CardHeader>
-              <CardContent className="p-0 relative flex-grow bg-black/40 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-border/10">
-                
-                {/* falling matrix grid */}
-                <div className="w-full md:w-3/5 h-full relative overflow-hidden bg-black/60">
-                  <canvas ref={matrixCanvasRef} className="absolute inset-0 w-full h-full opacity-60" />
-                  <div className="absolute top-3 left-3 bg-black/75 border border-primary/20 px-2 py-1 rounded text-[10px] font-mono text-primary z-10 select-none">
-                    MATRIX HEX SCANNER
-                  </div>
-                </div>
-
-                {/* HUD data sidebar */}
-                <div className="w-full md:w-2/5 p-4 flex flex-col justify-between gap-4 bg-muted/5">
-                  <div className="space-y-4">
-                    <div>
-                      <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest flex items-center gap-1">
-                        <Hash className="h-3 w-3" /> CURRENT NONCE
-                      </div>
-                      <div ref={nonceRef} className="text-2xl font-bold font-mono text-primary tabular-nums tracking-wide mt-1">
-                        {(stats?.nonce ?? 0).toLocaleString()}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-                        CURRENT HASH CANDIDATE
-                      </div>
-                      <div ref={hashRef} className="text-xs font-mono text-muted-foreground/90 break-all bg-black/40 border border-border/10 p-2 rounded mt-1 max-h-[60px] overflow-hidden select-all">
-                        {stats?.currentHash || '0000000000000000000000000000000000000000000000000000000000000000'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Local CPU usage indicator */}
-                  <div className="border-t border-border/10 pt-3">
-                    <div className="flex justify-between items-center text-xs mb-1.5">
-                      <span className="text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
-                        <Cpu className="h-3.5 w-3.5" /> CPU CORE LOADING
-                      </span>
-                      <span ref={cpuValueRef} className="font-mono text-primary font-bold">0%</span>
-                    </div>
-                    <div className="w-full bg-black/40 rounded-full h-2 overflow-hidden border border-border/10">
-                      <div ref={cpuBarRef} className="bg-gradient-to-r from-cyan-500 to-primary h-full rounded-full transition-all duration-500" style={{ width: '0%' }}></div>
-                    </div>
-                  </div>
-
-                </div>
-              </CardContent>
+              </div>
             </Card>
 
-            {/* Live Terminal Console Log streams */}
-            <Card className="bg-card/50 border-border/50 flex flex-col h-[280px]">
-              <CardHeader className="pb-2 border-b border-b-border/10 bg-muted/20">
-                <CardTitle className="text-sm font-medium text-primary flex items-center gap-2">
-                  <Terminal className="h-4 w-4" />
-                  LIVE MINING TERMINAL
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 flex-grow bg-black/90 font-mono text-[11px] overflow-y-auto max-h-[220px] scrollbar-thin scrollbar-thumb-muted" ref={consoleRef}>
-                <div className="text-muted-foreground italic">
-                  {miningActive 
-                    ? '[SYSTEM] Connecting to local hardware daemon...' 
-                    : '[SYSTEM] Console ready. Toggle mining engine to begin streaming attempts...'}
+            {/* 2. Candidate Hash */}
+            <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <Zap className="h-3.5 w-3.5 text-primary" /> Candidate Hash
+                </p>
+                <div className="text-xs font-mono text-muted-foreground/90 mt-2 break-all" ref={cardHashRef}>
+                  {truncateHash(liveStats?.hash || '')}
                 </div>
-              </CardContent>
+              </div>
+            </Card>
+
+            {/* 3. Hashes / Sec */}
+            <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <Cpu className="h-3.5 w-3.5 text-primary" /> Hashes / Sec
+                </p>
+                <div className="text-xl font-bold font-mono text-primary mt-2">
+                  {(liveStats?.hashrate ?? 0).toLocaleString()} H/s
+                </div>
+              </div>
+            </Card>
+
+            {/* 4. Total Hashes Attempted */}
+            <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <Flame className="h-3.5 w-3.5 text-primary" /> Total Hashes
+                </p>
+                <div className="text-xl font-bold font-mono mt-2" ref={cardTotalHashesRef}>
+                  {(liveStats?.total_hashes ?? 0).toLocaleString()}
+                </div>
+              </div>
+            </Card>
+
+            {/* 5. Blocks Mined */}
+            <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <Award className="h-3.5 w-3.5 text-primary" /> Blocks Mined
+                </p>
+                <div className="text-xl font-bold text-green-400 mt-2">
+                  {liveStats?.blocks_mined ?? 0}
+                </div>
+              </div>
+            </Card>
+
+            {/* 6. Estimated Next Block Time */}
+            <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-primary" /> Est. Next Block
+                </p>
+                <div className="text-xl font-bold mt-2">
+                  {liveStats?.estimated_block_time && liveStats.estimated_block_time > 0 && liveStats.estimated_block_time !== Infinity 
+                    ? `${liveStats.estimated_block_time.toFixed(1)}s` 
+                    : 'N/A'}
+                </div>
+              </div>
+            </Card>
+
+            {/* 7. Mining Uptime */}
+            <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <Activity className="h-3.5 w-3.5 text-primary" /> Mining Uptime
+                </p>
+                <div className="text-xl font-bold mt-2">
+                  {formatUptime(liveStats?.uptime ?? 0)}
+                </div>
+              </div>
+            </Card>
+
+            {/* 8. Blocks / Minute */}
+            <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <Gauge className="h-3.5 w-3.5 text-primary" /> Blocks / Minute
+                </p>
+                <div className="text-xl font-bold mt-2">
+                  {(liveStats?.blocks_per_minute ?? 0).toFixed(2)}
+                </div>
+              </div>
             </Card>
 
           </div>
 
-          {/* Efficiency and Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* MAIN VISUAL WORKSPACE */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <Card className="bg-card/50 border-border/50 shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Calculated Hashrate</CardTitle>
-                <Zap className="h-4 w-4 text-primary" />
+            {/* Visual Stream & Graph Tabs */}
+            <Card className="bg-card/50 border-border/50 lg:col-span-2 overflow-hidden flex flex-col h-[340px]">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between border-b border-border/10 bg-muted/20">
+                <div className="flex gap-2">
+                  <Button
+                    variant={activeTab === 'stream' ? 'default' : 'ghost'}
+                    size="sm"
+                    className="text-xs h-8 px-3"
+                    onClick={() => setActiveTab('stream')}
+                  >
+                    <Zap className="h-3.5 w-3.5 mr-1" /> Stream HUD
+                  </Button>
+                  <Button
+                    variant={activeTab === 'charts' ? 'default' : 'ghost'}
+                    size="sm"
+                    className="text-xs h-8 px-3"
+                    onClick={() => setActiveTab('charts')}
+                  >
+                    <TrendingUp className="h-3.5 w-3.5 mr-1" /> Work Diagnostics
+                  </Button>
+                </div>
+                <div className="flex items-center gap-4 text-xs font-mono">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span ref={visualTimerRef} className="font-bold text-foreground">00:00:00</span>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-primary">{stats?.networkHashRate || '0 H/s'}</div>
-                <p className="text-xs text-muted-foreground mt-1">Live calculation throughput</p>
+              
+              <CardContent className="p-0 relative flex-grow bg-black/40 flex flex-col">
+                {activeTab === 'stream' ? (
+                  <div className="flex flex-col md:flex-row h-full divide-y md:divide-y-0 md:divide-x divide-border/10">
+                    {/* Matrix scanner canvas */}
+                    <div className="w-full md:w-3/5 h-full relative overflow-hidden bg-black/60">
+                      <canvas ref={matrixCanvasRef} className="absolute inset-0 w-full h-full opacity-60" />
+                      <div className="absolute top-3 left-3 bg-black/75 border border-primary/20 px-2 py-1 rounded text-[10px] font-mono text-primary z-10 select-none">
+                        MATRIX HEX SCANNER
+                      </div>
+                    </div>
+
+                    {/* Stream Sidebar */}
+                    <div className="w-full md:w-2/5 p-4 flex flex-col justify-between gap-4 bg-muted/5">
+                      <div className="space-y-4">
+                        <div>
+                          <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest flex items-center gap-1">
+                            <Hash className="h-3 w-3" /> Live Nonce
+                          </div>
+                          <div ref={visualNonceRef} className="text-2xl font-bold font-mono text-primary tabular-nums tracking-wide mt-1">
+                            {(liveStats?.nonce ?? 0).toLocaleString()}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+                            Candidate Hash
+                          </div>
+                          <div ref={visualHashRef} className="text-xs font-mono text-muted-foreground/90 break-all bg-black/40 border border-border/10 p-2.5 rounded mt-1 max-h-[60px] overflow-hidden select-all">
+                            {liveStats?.hash || '0000000000000000000000000000000000000000000000000000000000000000'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* CPU Usage diagnostic */}
+                      <div className="border-t border-border/10 pt-3">
+                        <div className="flex justify-between items-center text-xs mb-1.5">
+                          <span className="text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
+                            <Cpu className="h-3.5 w-3.5" /> CPU Core Loading
+                          </span>
+                          <span ref={visualCpuValueRef} className="font-mono text-primary font-bold">0%</span>
+                        </div>
+                        <div className="w-full bg-black/40 rounded-full h-2 overflow-hidden border border-border/10">
+                          <div ref={visualCpuBarRef} className="bg-gradient-to-r from-cyan-500 to-primary h-full rounded-full transition-all duration-500" style={{ width: '0%' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 h-full overflow-y-auto">
+                    {/* Hashrate History Chart */}
+                    <div className="flex flex-col h-[260px] bg-black/30 border border-border/10 p-3 rounded-lg">
+                      <p className="text-[10px] text-primary uppercase font-bold tracking-wider mb-2 flex items-center gap-1">
+                        <Activity className="h-3.5 w-3.5" /> Hashrate History (Last 15 ticks)
+                      </p>
+                      <div className="flex-grow">
+                        {hashrateHistory.length === 0 ? (
+                          <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic">
+                            Waiting for mining workloads to execute...
+                          </div>
+                        ) : (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={hashrateHistory}>
+                              <defs>
+                                <linearGradient id="hashrateGradient" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor={CHART_COLORS.primary} stopOpacity={0.35} />
+                                  <stop offset="95%" stopColor={CHART_COLORS.primary} stopOpacity={0} />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} vertical={false} />
+                              <XAxis dataKey="time" {...axisProps} />
+                              <YAxis {...axisProps} tickFormatter={(v) => `${v}`} />
+                              <Tooltip {...tooltipStyle} />
+                              <Area
+                                type="monotone"
+                                dataKey="hashrate"
+                                stroke={CHART_COLORS.primary}
+                                strokeWidth={1.5}
+                                fill="url(#hashrateGradient)"
+                                name="Hashrate"
+                                {...chartAnimation}
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Mining Activity Graph */}
+                    <div className="flex flex-col h-[260px] bg-black/30 border border-border/10 p-3 rounded-lg">
+                      <p className="text-[10px] text-green-400 uppercase font-bold tracking-wider mb-2 flex items-center gap-1">
+                        <Flame className="h-3.5 w-3.5" /> Mining Workload (Hashes/Sec delta)
+                      </p>
+                      <div className="flex-grow">
+                        {activityHistory.length === 0 ? (
+                          <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic">
+                            Waiting for active attempts logging...
+                          </div>
+                        ) : (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={activityHistory}>
+                              <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} vertical={false} />
+                              <XAxis dataKey="time" {...axisProps} />
+                              <YAxis {...axisProps} tickFormatter={(v) => formatNumber(v)} />
+                              <Tooltip {...tooltipStyle} />
+                              <Bar
+                                dataKey="delta"
+                                fill={CHART_COLORS.success}
+                                radius={[3, 3, 0, 0]}
+                                name="Work Volume"
+                                {...chartAnimation}
+                              />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            <Card className="bg-card/50 border-border/50 shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Session Attempts</CardTitle>
-                <Hash className="h-4 w-4 text-primary" />
+            {/* Live Scrolling Logs Terminal */}
+            <Card className="bg-card/50 border-border/50 flex flex-col h-[340px]">
+              <CardHeader className="pb-2 border-b border-b-border/10 bg-muted/20">
+                <CardTitle className="text-sm font-medium text-primary flex items-center gap-2">
+                  <Terminal className="h-4 w-4" />
+                  Live Mining Logs
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div ref={totalHashesValueRef} className="text-2xl font-bold font-mono tabular-nums">0</div>
-                <p className="text-xs text-muted-foreground mt-1">Total hashes attempted in this session</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card/50 border-border/50 shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Average Sealing Time</CardTitle>
-                <Clock className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{displayAvgBlockTime}</div>
-                <p className="text-xs text-muted-foreground mt-1">Estimated duration between blocks</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card/50 border-border/50 shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Wallet Balance</CardTitle>
-                <Coins className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold font-mono">{(stats?.balance ?? 0).toFixed(4)}</div>
-                <p className="text-xs text-muted-foreground mt-1">LUNAR cryptocurrency balance</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card/50 border-border/50 shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Sealed Mined Blocks</CardTitle>
-                <Activity className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold font-mono">{formatNumber(stats?.totalMinedBlocks ?? 0)}</div>
-                <p className="text-xs text-muted-foreground mt-1">Total local blockchain blocks mined</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card/50 border-border/50 shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Current Difficulty</CardTitle>
-                <Gauge className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatNumber(stats?.currentDifficulty ?? 0)}</div>
-                <p className="text-xs text-muted-foreground mt-1">Leading zero constraint difficulty</p>
+              <CardContent 
+                className="p-4 flex-grow bg-black/90 font-mono text-[11px] overflow-y-auto scrollbar-thin scrollbar-thumb-muted" 
+                ref={terminalContainerRef}
+              >
+                {logs.length === 0 ? (
+                  <div className="text-muted-foreground italic">
+                    {miningActive 
+                      ? '[MINER] Connecting to local hardware daemon...' 
+                      : '[MINER] Console ready. Toggle mining engine to begin streaming attempts...'}
+                  </div>
+                ) : (
+                  (logs || []).map((log, i) => (
+                    <div key={i} className={`text-[10px] font-mono my-1 leading-relaxed ${
+                      log.type === 'success' ? 'text-green-400 font-bold border-l border-green-500 pl-1.5' :
+                      log.type === 'attempt' ? 'text-primary/70' : 'text-yellow-400/90'
+                    }`}>
+                      {log.message}
+                    </div>
+                  ))
+                )}
               </CardContent>
             </Card>
 

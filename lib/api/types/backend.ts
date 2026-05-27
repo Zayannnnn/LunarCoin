@@ -206,3 +206,28 @@ export interface PaginatedResponse<T> {
   page?: number
   limit?: number
 }
+
+export interface BackendLiveMiningStats {
+  mining: boolean
+  nonce: number
+  hash: string
+  hashrate: number
+  total_hashes: number
+  estimated_block_time: number
+  blocks_per_minute: number
+  uptime: number
+  blocks_mined: number
+  difficulty: number
+  balance: number
+}
+
+export interface BackendMiningLog {
+  timestamp: string
+  type: string
+  message: string
+}
+
+export interface BackendMiningLogsResponse {
+  logs: BackendMiningLog[]
+}
+

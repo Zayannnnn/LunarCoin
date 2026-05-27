@@ -14,6 +14,8 @@ import type {
   ChartDataPoint,
   FeeChartData,
   MempoolData,
+  LiveMiningStats,
+  MiningLog,
 } from '@/lib/types/blockchain'
 
 function generateHash(): string {
@@ -271,6 +273,8 @@ export const mockBlockchainApi = {
   getMempool: async () => { await delay(); return generateMempoolData() },
   getFeeEstimates: async () => { await delay(); return generateFeeEstimates() },
   getMiningStats: async () => { await delay(); return generateMiningStats() },
+  getLiveMiningStats: async () => { await delay(); return generateLiveMiningStats() },
+  getMiningLogs: async () => { await delay(); return generateMiningLogs() },
   startMining: async () => { await delay() },
   stopMining: async () => { await delay() },
   getTopMiners: async (limit = 10) => { await delay(); return generateTopMiners(limit) },
@@ -280,3 +284,47 @@ export const mockBlockchainApi = {
   getFeeHistory: async (hours = 24) => { await delay(); return generateFeeChartData(hours) },
   getTpsHistory: async (hours = 24) => { await delay(); return generateChartData(hours, 30, 15) },
 }
+
+export function generateLiveMiningStats(): LiveMiningStats {
+  return {
+    mining: true,
+    nonce: randomBetween(100000, 999999),
+    current_nonce: randomBetween(100000, 999999),
+    hash: generateHash(),
+    current_hash: generateHash(),
+    hashrate: randomBetween(100, 1000),
+    total_hashes: randomBetween(50000, 500000),
+    estimated_block_time: randomBetween(10, 120),
+    blocks_per_minute: Number((Math.random() * 2).toFixed(2)),
+    uptime: randomBetween(10, 1000),
+    blocks_mined: randomBetween(1, 10),
+    difficulty: 4,
+    balance: randomBetween(100, 200),
+  }
+}
+
+export function generateMiningLogs(): MiningLog[] {
+  return [
+    {
+      timestamp: new Date().toISOString(),
+      type: 'info',
+      message: '[MINER] Started mining block #101. Zero-mask difficulty target: 0000'
+    },
+    {
+      timestamp: new Date().toISOString(),
+      type: 'attempt',
+      message: '[MINER] Hashing nonce 842991... Candidate: 000ab23...'
+    },
+    {
+      timestamp: new Date().toISOString(),
+      type: 'success',
+      message: '[MINER] Difficulty target matched! Block #101 accepted!'
+    },
+    {
+      timestamp: new Date().toISOString(),
+      type: 'success',
+      message: '[MINER] Reward payout: +1 LUNAR credited!'
+    }
+  ]
+}
+

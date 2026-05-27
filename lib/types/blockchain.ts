@@ -124,3 +124,26 @@ export interface MempoolData {
   }[]
   pendingTransactions: Transaction[]
 }
+
+export interface LiveMiningStats {
+  mining: boolean
+  nonce: number
+  current_nonce: number
+  hash: string
+  current_hash: string
+  hashrate: number
+  total_hashes: number
+  estimated_block_time: number
+  blocks_per_minute: number
+  uptime: number
+  blocks_mined: number
+  difficulty: number
+  balance: number
+}
+
+export interface MiningLog {
+  timestamp: string
+  type: string
+  message: string
+}
+
