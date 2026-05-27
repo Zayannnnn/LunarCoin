@@ -638,8 +638,8 @@ export default function MiningPage() {
 
           </div>
 
-          {/* TELEMETRY STATS GRID (8 Cards) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* TELEMETRY STATS GRID (10 Cards) */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             
             {/* 1. Current Nonce */}
             <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
@@ -739,13 +739,46 @@ export default function MiningPage() {
               </div>
             </Card>
 
+            {/* 9. P2P Active LAN Peers */}
+            <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <Activity className="h-3.5 w-3.5 text-cyan-400" /> Active LAN Peers
+                </p>
+                <div className="text-xl font-bold font-mono text-cyan-400 mt-2 flex items-center gap-2">
+                  <span>{liveStats?.peers_count ?? 0}</span>
+                  {(liveStats?.peers_count ?? 0) > 0 && (
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400"></span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </Card>
+
+            {/* 10. Blockchain Sync Status */}
+            <Card className="bg-card/40 border-border/40 card-glow p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <RotateCw className="h-3.5 w-3.5 text-primary" /> Sync Status
+                </p>
+                <div className={`text-xl font-bold font-mono mt-2 uppercase tracking-wide ${
+                  liveStats?.sync_status === 'Synced' ? 'text-green-400 shadow-[0_0_8px_rgba(34,197,94,0.1)]' :
+                  liveStats?.sync_status === 'Syncing' ? 'text-yellow-400 animate-pulse' : 'text-muted-foreground'
+                }`}>
+                  {liveStats?.sync_status ?? 'Synced'}
+                </div>
+              </div>
+            </Card>
+
           </div>
 
           {/* MAIN VISUAL WORKSPACE */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* Visual Stream & Graph Tabs */}
-            <Card className="bg-card/50 border-border/50 lg:col-span-2 overflow-hidden flex flex-col h-[340px]">
+            <Card className="bg-card/50 border-border/50 lg:col-span-2 overflow-hidden flex flex-col h-[512px]">
               <CardHeader className="pb-2 flex flex-row items-center justify-between border-b border-border/10 bg-muted/20">
                 <div className="flex gap-2">
                   <Button
@@ -823,7 +856,7 @@ export default function MiningPage() {
                 ) : (
                   <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 h-full overflow-y-auto">
                     {/* Hashrate History Chart */}
-                    <div className="flex flex-col h-[260px] bg-black/30 border border-border/10 p-3 rounded-lg">
+                    <div className="flex flex-col h-[432px] bg-black/30 border border-border/10 p-3 rounded-lg">
                       <p className="text-[10px] text-primary uppercase font-bold tracking-wider mb-2 flex items-center gap-1">
                         <Activity className="h-3.5 w-3.5" /> Hashrate History (Last 15 ticks)
                       </p>
@@ -861,7 +894,7 @@ export default function MiningPage() {
                     </div>
 
                     {/* Mining Activity Graph */}
-                    <div className="flex flex-col h-[260px] bg-black/30 border border-border/10 p-3 rounded-lg">
+                    <div className="flex flex-col h-[432px] bg-black/30 border border-border/10 p-3 rounded-lg">
                       <p className="text-[10px] text-green-400 uppercase font-bold tracking-wider mb-2 flex items-center gap-1">
                         <Flame className="h-3.5 w-3.5" /> Mining Workload (Hashes/Sec delta)
                       </p>
@@ -894,8 +927,8 @@ export default function MiningPage() {
               </CardContent>
             </Card>
 
-            {/* Right-hand side stack: Logs & History ledger */}
-            <div className="flex flex-col gap-4 h-[340px]">
+            {/* Right-hand side stack: Logs, P2P activity feed, and Ledger table */}
+            <div className="flex flex-col gap-4 h-[512px]">
               
               {/* Live Logs Terminal */}
               <Card className="bg-card/50 border-border/50 flex flex-col h-[160px]">
@@ -928,8 +961,36 @@ export default function MiningPage() {
                 </CardContent>
               </Card>
 
+              {/* P2P Network Activity Feed */}
+              <Card className="bg-card/50 border-border/50 flex flex-col h-[160px]">
+                <CardHeader className="py-2 border-b border-b-border/10 bg-muted/20 flex flex-row items-center justify-between">
+                  <CardTitle className="text-xs font-bold text-cyan-400 flex items-center gap-1.5 uppercase tracking-wider">
+                    <Activity className="h-4 w-4 text-cyan-400 animate-pulse" />
+                    P2P Network Activity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent 
+                  className="p-3 flex-grow bg-black/90 font-mono text-[9px] overflow-y-auto scrollbar-thin scrollbar-thumb-muted"
+                >
+                  {liveStats?.activity_logs && liveStats.activity_logs.length > 0 ? (
+                    liveStats.activity_logs.map((log, i) => (
+                      <div key={i} className="text-[9px] font-mono my-0.5 leading-relaxed text-cyan-400/80 border-l border-cyan-500/50 pl-1.5">
+                        <span className="text-muted-foreground text-[8px] mr-1">
+                          [{new Date(log.timestamp).toLocaleTimeString([], { hour12: false })}]
+                        </span>
+                        {log.message}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-muted-foreground italic">
+                      [P2P] Listening for LAN network broadcasts...
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Mined Block Ledger (History Table) */}
-              <Card className="bg-card/50 border-border/50 flex flex-col h-[164px]">
+              <Card className="bg-card/50 border-border/50 flex flex-col h-[160px]">
                 <CardHeader className="py-2 border-b border-b-border/10 bg-muted/20 flex flex-row items-center justify-between">
                   <CardTitle className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider">
                     <Award className="h-4 w-4 text-cyan-400 animate-pulse" />

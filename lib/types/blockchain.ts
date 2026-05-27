@@ -139,6 +139,9 @@ export interface LiveMiningStats {
   blocks_mined: number
   difficulty: number
   balance: number
+  peers_count?: number
+  sync_status?: string
+  activity_logs?: Array<{ timestamp: string; message: string }>
 }
 
 export interface MiningLog {

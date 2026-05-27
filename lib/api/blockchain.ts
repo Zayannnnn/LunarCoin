@@ -108,6 +108,11 @@ export const blockchainApi: BlockchainApi = {
 		return realBlockchainApi.getPeers(limit)
 	},
 
+	async connectPeer(address: string) {
+		if (env.api.useMock) return mockBlockchainApi.connectPeer(address)
+		return realBlockchainApi.connectPeer(address)
+	},
+
 	async getHashRateHistory(hours?: number) {
 		if (env.api.useMock) return mockBlockchainApi.getHashRateHistory(hours)
 		return realBlockchainApi.getHashRateHistory(hours)

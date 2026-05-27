@@ -219,6 +219,9 @@ export interface BackendLiveMiningStats {
   blocks_mined: number
   difficulty: number
   balance: number
+  peers_count?: number
+  sync_status?: string
+  activity_logs?: BackendMiningLog[]
 }
 
 export interface BackendMiningLog {

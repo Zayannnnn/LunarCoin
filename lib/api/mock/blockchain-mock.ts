@@ -283,6 +283,10 @@ export const mockBlockchainApi = {
   stopMining: async () => { await delay() },
   getTopMiners: async (limit = 10) => { await delay(); return generateTopMiners(limit) },
   getPeers: async (limit = 50) => { await delay(); return generateMockPeers(limit) },
+  connectPeer: async (address: string) => {
+    await delay()
+    return { status: 'success', message: `Successfully connected to mock peer ${address}` }
+  },
   getHashRateHistory: async (hours = 24) => { await delay(); return generateChartData(hours, 125, 10) },
   getDifficultyHistory: async (hours = 24) => { await delay(); return generateChartData(hours, 8.5e13, 1e12) },
   getFeeHistory: async (hours = 24) => { await delay(); return generateFeeChartData(hours) },
@@ -304,6 +308,12 @@ export function generateLiveMiningStats(): LiveMiningStats {
     blocks_mined: randomBetween(1, 10),
     difficulty: 4,
     balance: randomBetween(100, 200),
+    peers_count: randomBetween(1, 5),
+    sync_status: 'Synced',
+    activity_logs: [
+      { timestamp: new Date().toISOString(), message: 'Node initialized' },
+      { timestamp: new Date().toISOString(), message: 'UDP Broadcaster active' },
+    ],
   }
 }
 

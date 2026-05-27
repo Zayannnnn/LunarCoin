@@ -260,6 +260,14 @@ export function mapLiveMiningStats(raw: BackendLiveMiningStats): LiveMiningStats
     blocks_mined: Number(raw?.blocks_mined ?? 0),
     difficulty: Number(raw?.difficulty ?? 0),
     balance: Number(raw?.balance ?? 0),
+    peers_count: Number(raw?.peers_count ?? 0),
+    sync_status: String(raw?.sync_status ?? 'Synced'),
+    activity_logs: Array.isArray(raw?.activity_logs)
+      ? raw.activity_logs.map((log: any) => ({
+          timestamp: String(log?.timestamp ?? ''),
+          message: String(log?.message ?? ''),
+        }))
+      : [],
   }
 }
 
