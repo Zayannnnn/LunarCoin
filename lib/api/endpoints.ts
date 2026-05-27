@@ -20,6 +20,8 @@ export const endpoints = {
   addressTransactions: (address: string) =>
     `${API_PREFIX}/addresses/${encodeURIComponent(address)}/transactions`,
   mempool: `${API_PREFIX}/mempool`,
+  sendTransaction: `${API_PREFIX}/send-transaction`,
+  receiveTransaction: `${API_PREFIX}/receive-transaction`,
   feeEstimates: `${API_PREFIX}/fees`,
   feeHistory: `${API_PREFIX}/fees/history`,
   miningStats: `${API_PREFIX}/mining-stats`,

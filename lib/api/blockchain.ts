@@ -113,6 +113,11 @@ export const blockchainApi: BlockchainApi = {
 		return realBlockchainApi.connectPeer(address)
 	},
 
+	async sendTransaction(recipient: string, amount: number) {
+		if (env.api.useMock) return mockBlockchainApi.sendTransaction(recipient, amount)
+		return realBlockchainApi.sendTransaction(recipient, amount)
+	},
+
 	async getHashRateHistory(hours?: number) {
 		if (env.api.useMock) return mockBlockchainApi.getHashRateHistory(hours)
 		return realBlockchainApi.getHashRateHistory(hours)

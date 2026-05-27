@@ -287,6 +287,10 @@ export const mockBlockchainApi = {
     await delay()
     return { status: 'success', message: `Successfully connected to mock peer ${address}` }
   },
+  sendTransaction: async (recipient: string, amount: number) => {
+    await delay()
+    return { status: 'success', message: `Transaction compiled, signed, and broadcast successfully!`, transaction: { hash: generateHash(), from: 'mock-wallet', to: recipient, amount, timestamp: Date.now() } }
+  },
   getHashRateHistory: async (hours = 24) => { await delay(); return generateChartData(hours, 125, 10) },
   getDifficultyHistory: async (hours = 24) => { await delay(); return generateChartData(hours, 8.5e13, 1e12) },
   getFeeHistory: async (hours = 24) => { await delay(); return generateFeeChartData(hours) },

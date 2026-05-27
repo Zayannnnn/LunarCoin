@@ -142,6 +142,9 @@ export interface LiveMiningStats {
   peers_count?: number
   sync_status?: string
   activity_logs?: Array<{ timestamp: string; message: string }>
+  tps?: number
+  mempool_size?: number
+  pending_transfers?: any[]
 }
 
 export interface MiningLog {

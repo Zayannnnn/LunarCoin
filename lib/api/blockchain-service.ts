@@ -94,6 +94,7 @@ export interface BlockchainApi {
   getTopMiners(limit?: number): Promise<MinerInfo[]>
   getPeers(limit?: number): Promise<Peer[]>
   connectPeer(address: string): Promise<any>
+  sendTransaction(recipient: string, amount: number): Promise<any>
   getHashRateHistory(hours?: number): Promise<ChartDataPoint[]>
   getDifficultyHistory(hours?: number): Promise<ChartDataPoint[]>
   getFeeHistory(hours?: number): Promise<FeeChartData[]>
@@ -251,6 +252,10 @@ const realBlockchainApi: BlockchainApi = {
 
   async connectPeer(address: string) {
     return await apiPost<any>(endpoints.connectPeer, { address })
+  },
+
+  async sendTransaction(recipient: string, amount: number) {
+    return await apiPost<any>(endpoints.sendTransaction, { recipient, amount })
   },
 
   async getHashRateHistory(hours = 24) {

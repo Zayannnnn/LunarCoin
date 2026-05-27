@@ -222,6 +222,9 @@ export interface BackendLiveMiningStats {
   peers_count?: number
   sync_status?: string
   activity_logs?: BackendMiningLog[]
+  tps?: number
+  mempool_size?: number
+  pending_transfers?: any[]
 }
 
 export interface BackendMiningLog {

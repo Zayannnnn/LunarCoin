@@ -90,7 +90,7 @@ export function mapTransaction(raw: BackendTransaction): Transaction {
   }
 
   return {
-    hash: normalizeHex(raw.hash),
+    hash: raw.hash ? normalizeHex(raw.hash) : ((raw as any).tx_id ? normalizeHex((raw as any).tx_id) : ''),
     blockHeight,
     blockHash: raw.block_hash ?? raw.blockHash ? normalizeHex(raw.block_hash ?? raw.blockHash!) : null,
     from: from ? normalizeHex(from) : from,
@@ -267,6 +267,11 @@ export function mapLiveMiningStats(raw: BackendLiveMiningStats): LiveMiningStats
           timestamp: String(log?.timestamp ?? ''),
           message: String(log?.message ?? ''),
         }))
+      : [],
+    tps: Number(raw?.tps ?? 0),
+    mempool_size: Number(raw?.mempool_size ?? 0),
+    pending_transfers: Array.isArray(raw?.pending_transfers)
+      ? raw.pending_transfers.map((tx: any) => mapTransaction(tx))
       : [],
   }
 }
