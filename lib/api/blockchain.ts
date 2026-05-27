@@ -118,6 +118,21 @@ export const blockchainApi: BlockchainApi = {
 		return realBlockchainApi.sendTransaction(recipient, amount)
 	},
 
+	async getNetworkHealth() {
+		if (env.api.useMock) return mockBlockchainApi.getNetworkHealth()
+		return realBlockchainApi.getNetworkHealth()
+	},
+
+	async getNodeReputation() {
+		if (env.api.useMock) return mockBlockchainApi.getNodeReputation()
+		return realBlockchainApi.getNodeReputation()
+	},
+
+	async getFederatedStats() {
+		if (env.api.useMock) return mockBlockchainApi.getFederatedStats()
+		return realBlockchainApi.getFederatedStats()
+	},
+
 	async getHashRateHistory(hours?: number) {
 		if (env.api.useMock) return mockBlockchainApi.getHashRateHistory(hours)
 		return realBlockchainApi.getHashRateHistory(hours)

@@ -18,6 +18,8 @@ import type {
   MiningLog,
   WalletAddressInfo,
   WalletHistoryItem,
+  NetworkHealth,
+  NodeReputation,
 } from '@/lib/types/blockchain'
 
 function generateHash(): string {
@@ -295,6 +297,103 @@ export const mockBlockchainApi = {
   getDifficultyHistory: async (hours = 24) => { await delay(); return generateChartData(hours, 8.5e13, 1e12) },
   getFeeHistory: async (hours = 24) => { await delay(); return generateFeeChartData(hours) },
   getTpsHistory: async (hours = 24) => { await delay(); return generateChartData(hours, 30, 15) },
+  getNetworkHealth: async (): Promise<NetworkHealth> => {
+    await delay()
+    return {
+      status: 'Healthy',
+      network_tps: 4.85,
+      active_nodes_count: 5,
+      total_chain_height: 10420,
+      avg_peer_latency: 42.6,
+      fork_warnings: [],
+      topology: {
+        nodes: [
+          { id: '127.0.0.1:5000', label: 'Local Node (You)', ip: '127.0.0.1', port: 5000, trust: 100, height: 10420, type: 'local' },
+          { id: '192.168.1.102:5000', label: 'Node A7B2', ip: '192.168.1.102', port: 5000, trust: 95.5, height: 10420, type: 'peer' },
+          { id: '192.168.1.144:5000', label: 'Node C9D4', ip: '192.168.1.144', port: 5000, trust: 88.0, height: 10419, type: 'peer' },
+          { id: '192.168.1.201:5000', label: 'Node E1F0', ip: '192.168.1.201', port: 5000, trust: 99.0, height: 10420, type: 'peer' },
+          { id: '192.168.1.88:5000', label: 'Node 2B8C', ip: '192.168.1.88', port: 5000, trust: 14.5, height: 10405, type: 'peer' },
+        ],
+        edges: [
+          { source: '127.0.0.1:5000', target: '192.168.1.102:5000', delay: 18.2 },
+          { source: '127.0.0.1:5000', target: '192.168.1.144:5000', delay: 62.4 },
+          { source: '127.0.0.1:5000', target: '192.168.1.201:5000', delay: 24.5 },
+          { source: '127.0.0.1:5000', target: '192.168.1.88:5000', delay: 145.8 },
+        ]
+      }
+    }
+  },
+  getNodeReputation: async (): Promise<{ reputations: NodeReputation[] }> => {
+    await delay()
+    return {
+      reputations: [
+        {
+          peer: '192.168.1.102:5000',
+          score: 95.5,
+          uptime: 99.2,
+          valid_blocks: 14,
+          invalid_blocks: 0,
+          malformed_txs: 0,
+          sync_success_rate: 100.0,
+          penalty_logs: [],
+          blacklisted: false
+        },
+        {
+          peer: '192.168.1.201:5000',
+          score: 99.0,
+          uptime: 100.0,
+          valid_blocks: 22,
+          invalid_blocks: 0,
+          malformed_txs: 0,
+          sync_success_rate: 100.0,
+          penalty_logs: [],
+          blacklisted: false
+        },
+        {
+          peer: '192.168.1.144:5000',
+          score: 88.0,
+          uptime: 94.5,
+          valid_blocks: 8,
+          invalid_blocks: 1,
+          malformed_txs: 0,
+          sync_success_rate: 92.0,
+          penalty_logs: [
+            { timestamp: new Date(Date.now() - 3600000 * 2).toISOString(), delta: -5.0, reason: 'Heartbeat ping failed / Unresponsive node', score_before: 93.0, score_after: 88.0 }
+          ],
+          blacklisted: false
+        },
+        {
+          peer: '192.168.1.88:5000',
+          score: 14.5,
+          uptime: 45.0,
+          valid_blocks: 1,
+          invalid_blocks: 5,
+          malformed_txs: 8,
+          sync_success_rate: 34.0,
+          penalty_logs: [
+            { timestamp: new Date(Date.now() - 600000).toISOString(), delta: -25.0, reason: 'Invalid block: recalculated hash mismatch', score_before: 39.5, score_after: 14.5 },
+            { timestamp: new Date(Date.now() - 1200000).toISOString(), delta: -15.0, reason: 'Malformed transaction: invalid sender signature', score_before: 54.5, score_after: 39.5 }
+          ],
+          blacklisted: true
+        }
+      ]
+    }
+  },
+  getFederatedStats: async (): Promise<any> => {
+    await delay()
+    return {
+      node_id: 'mock-local-node',
+      chain_length: 10420,
+      latest_block_hash: '0000abcd1234567890ef',
+      mempool_size: 4,
+      tps: 0.15,
+      uptime: 3600.0,
+      peers: ['192.168.1.102:5000', '192.168.1.144:5000', '192.168.1.201:5000'],
+      chain_summary: [
+        { index: 10419, hash: '0000abcd1234567890ef' }
+      ]
+    }
+  },
 }
 
 export function generateLiveMiningStats(): LiveMiningStats {

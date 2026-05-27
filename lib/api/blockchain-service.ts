@@ -42,6 +42,8 @@ import type {
   MiningLog,
   WalletAddressInfo,
   WalletHistoryItem,
+  NetworkHealth,
+  NodeReputation,
 } from '@/lib/types/blockchain'
 import type {
   BackendBlock,
@@ -95,6 +97,9 @@ export interface BlockchainApi {
   getPeers(limit?: number): Promise<Peer[]>
   connectPeer(address: string): Promise<any>
   sendTransaction(recipient: string, amount: number): Promise<any>
+  getNetworkHealth(): Promise<NetworkHealth>
+  getNodeReputation(): Promise<{ reputations: NodeReputation[] }>
+  getFederatedStats(): Promise<any>
   getHashRateHistory(hours?: number): Promise<ChartDataPoint[]>
   getDifficultyHistory(hours?: number): Promise<ChartDataPoint[]>
   getFeeHistory(hours?: number): Promise<FeeChartData[]>
@@ -256,6 +261,18 @@ const realBlockchainApi: BlockchainApi = {
 
   async sendTransaction(recipient: string, amount: number) {
     return await apiPost<any>(endpoints.sendTransaction, { recipient, amount })
+  },
+
+  async getNetworkHealth() {
+    return await apiGet<NetworkHealth>(endpoints.networkHealth)
+  },
+
+  async getNodeReputation() {
+    return await apiGet<{ reputations: NodeReputation[] }>(endpoints.nodeReputation)
+  },
+
+  async getFederatedStats() {
+    return await apiGet<any>(endpoints.federatedStats)
   },
 
   async getHashRateHistory(hours = 24) {

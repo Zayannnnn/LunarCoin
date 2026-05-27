@@ -16,6 +16,7 @@ import {
   Wifi,
   ChevronLeft,
   ChevronRight,
+  ShieldAlert,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
@@ -30,6 +31,7 @@ const navItems = [
   { href: '/dashboard/fees', label: 'Fees', icon: TrendingUp },
   { href: '/dashboard/mining', label: 'Mining', icon: Pickaxe },
   { href: '/dashboard/network', label: 'Network', icon: Wifi },
+  { href: '/dashboard/reputation', label: 'Node Reputation', icon: ShieldAlert },
 ]
 
 interface SidebarProps {

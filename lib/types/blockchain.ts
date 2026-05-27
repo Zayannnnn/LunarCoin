@@ -167,3 +167,62 @@ export interface WalletHistoryItem {
   block: number
 }
 
+export interface TopologyNode {
+  id: string
+  label: string
+  ip: string
+  port: number
+  trust: number
+  height: number
+  type: 'local' | 'peer'
+}
+
+export interface TopologyEdge {
+  source: string
+  target: string
+  delay: number
+}
+
+export interface TopologyGraph {
+  nodes: TopologyNode[]
+  edges: TopologyEdge[]
+}
+
+export interface ForkWarning {
+  peer: string
+  height: number
+  local_hash: string
+  peer_hash: string
+  timestamp: string
+}
+
+export interface NetworkHealth {
+  status: string
+  network_tps: number
+  active_nodes_count: number
+  total_chain_height: number
+  avg_peer_latency: number
+  fork_warnings: ForkWarning[]
+  topology: TopologyGraph
+}
+
+export interface PenaltyLog {
+  timestamp: string
+  delta: number;
+  reason: string;
+  score_before: number;
+  score_after: number;
+}
+
+export interface NodeReputation {
+  peer: string
+  score: number
+  uptime: number
+  valid_blocks: number
+  invalid_blocks: number
+  malformed_txs: number
+  sync_success_rate: number
+  penalty_logs: PenaltyLog[]
+  blacklisted: boolean
+}
+
