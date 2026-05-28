@@ -257,6 +257,26 @@ export const blockchainApi: BlockchainApi = {
 		if (env.api.useMock) return mockBlockchainApi.unpinFile(hash)
 		return realBlockchainApi.unpinFile(hash)
 	},
+
+	async getAgents() {
+		if (env.api.useMock) return mockBlockchainApi.getAgents()
+		return realBlockchainApi.getAgents()
+	},
+
+	async spawnAgent(name: string, role: string) {
+		if (env.api.useMock) return mockBlockchainApi.spawnAgent(name, role)
+		return realBlockchainApi.spawnAgent(name, role)
+	},
+
+	async getAgent(id: string) {
+		if (env.api.useMock) return mockBlockchainApi.getAgent(id)
+		return realBlockchainApi.getAgent(id)
+	},
+
+	async executeAgent(id: string, payload?: any) {
+		if (env.api.useMock) return mockBlockchainApi.executeAgent(id, payload)
+		return realBlockchainApi.executeAgent(id, payload)
+	},
 }
 
 export type { BlockchainApi }

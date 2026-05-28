@@ -21,6 +21,7 @@ import {
   Boxes,
   Vote,
   Image,
+  Bot,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
@@ -38,6 +39,7 @@ const navItems = [
   { href: '/dashboard/dapps', label: 'DApps Workspace', icon: Boxes },
   { href: '/dashboard/governance', label: 'DAO Governance', icon: Vote },
   { href: '/dashboard/nfts', label: 'NFT & Storage', icon: Image },
+  { href: '/dashboard/agents', label: 'AI Agents Hub', icon: Bot },
   { href: '/dashboard/network', label: 'Network', icon: Wifi },
   { href: '/dashboard/reputation', label: 'Node Reputation', icon: ShieldAlert },
 ]

@@ -226,5 +226,33 @@ export class LunarSDK {
   static async unpinFile(hash: string): Promise<any> {
     return await blockchainApi.unpinFile(hash)
   }
+
+  /**
+   * Fetch all autonomous AI agents
+   */
+  static async fetchAgents(): Promise<any> {
+    return await blockchainApi.getAgents()
+  }
+
+  /**
+   * Spawn a new AI agent
+   */
+  static async spawnAgent(name: string, role: string): Promise<any> {
+    return await blockchainApi.spawnAgent(name, role)
+  }
+
+  /**
+   * Fetch details of a single agent
+   */
+  static async fetchAgent(id: string): Promise<any> {
+    return await blockchainApi.getAgent(id)
+  }
+
+  /**
+   * Execute an agent's loop manually
+   */
+  static async executeAgent(id: string, payload: any = {}): Promise<any> {
+    return await blockchainApi.executeAgent(id, payload)
+  }
 }
 export default LunarSDK

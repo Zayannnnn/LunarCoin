@@ -128,6 +128,10 @@ export interface BlockchainApi {
   getFiles(): Promise<{ files: any[] }>
   pinFile(hash: string): Promise<any>
   unpinFile(hash: string): Promise<any>
+  getAgents(): Promise<{ agents: any[] }>
+  spawnAgent(name: string, role: string): Promise<any>
+  getAgent(id: string): Promise<any>
+  executeAgent(id: string, payload?: any): Promise<any>
 }
 
 const realBlockchainApi: BlockchainApi = {
@@ -413,6 +417,22 @@ const realBlockchainApi: BlockchainApi = {
 
   async unpinFile(hash: string) {
     return await apiPost<any>(`/file/${hash}/unpin`)
+  },
+
+  async getAgents() {
+    return await apiGet<{ agents: any[] }>('/agents')
+  },
+
+  async spawnAgent(name: string, role: string) {
+    return await apiPost<any>('/spawn-agent', { name, role })
+  },
+
+  async getAgent(id: string) {
+    return await apiGet<any>('/agent/' + id)
+  },
+
+  async executeAgent(id: string, payload: any = {}) {
+    return await apiPost<any>(`/agent/${id}/execute`, payload)
   },
 }
 

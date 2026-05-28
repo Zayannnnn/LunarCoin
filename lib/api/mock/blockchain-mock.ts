@@ -617,6 +617,34 @@ export const mockBlockchainApi = {
   unpinFile: async (hash: string) => {
     await delay()
     return { status: 'success', pinned: false }
+  },
+
+  getAgents: async () => {
+    await delay()
+    return { agents: [
+      { id: 'AGENT-GOV', name: 'AI Gov Delegate', role: 'governance', status: 'active', uptime: 3600, activity_sec: 0.125, permissions: ['read_chain', 'vote_proposals', 'detect_threats'], safety_limits: { max_votes_per_block: 5, max_simulations_per_run: 50 }, decision_logs: [{ timestamp: new Date().toISOString(), message: 'Agent secured and evaluating ledger.' }], threat_warnings: [], predictions: { consensus_attack_risk: 'LOW', treasury_health_score: 95.0, next_proposal_recommendation: 'Optimize gas cap' } },
+      { id: 'AGENT-TREASURY', name: 'AI Treasury Optimizer', role: 'treasury', status: 'active', uptime: 3600, activity_sec: 0.105, permissions: ['read_treasury', 'simulate_yields'], safety_limits: { max_votes_per_block: 5 }, decision_logs: [{ timestamp: new Date().toISOString(), message: 'Compounding APY locks evaluated.' }], predictions: { staking_yield_forecast: '+8.4% APY', treasury_depletion_forecast: 'Stable', incentive_recommendation: 'Fund developer grants' } },
+      { id: 'AGENT-SECURITY', name: 'LunarVM AI Auditor', role: 'security', status: 'active', uptime: 3600, activity_sec: 0.145, permissions: ['read_vm_states', 'audit_bytecodes'], safety_limits: { sandbox_depth: 10 }, decision_logs: [{ timestamp: new Date().toISOString(), message: 'Virtual machine instructions audited.' }], predictions: { network_vulnerability_risk: '0.01%', average_contract_security_score: '98.5/100', last_audited_signature: 'LC84A7 (Passed)' } },
+      { id: 'AGENT-MARKET', name: 'AI Tokenomics Simulator', role: 'market', status: 'active', uptime: 3600, activity_sec: 0.115, permissions: ['read_market_telemetry', 'project_tokenomics'], safety_limits: { max_simulations_per_run: 50 }, decision_logs: [{ timestamp: new Date().toISOString(), message: 'Simulated pricing forecasts calculated.' }], predictions: { token_price_direction: 'UPWARD', market_cap_forecast: '$25,000.00', liquidity_health: 'OPTIMAL' } }
+    ]}
+  },
+
+  spawnAgent: async (name: string, role: string) => {
+    await delay()
+    return { status: 'success', agent: { id: 'AGENT-' + Math.random().toString(36).substring(2, 6).toUpperCase(), name, role, status: 'active', uptime: 0, activity_sec: 0.12, permissions: [], safety_limits: {}, decision_logs: [] } }
+  },
+
+  getAgent: async (id: string) => {
+    await delay()
+    return { id, name: 'AI Agent', role: 'governance', status: 'active', uptime: 3600, activity_sec: 0.12, permissions: [], safety_limits: {}, decision_logs: [] }
+  },
+
+  executeAgent: async (id: string, payload: any = {}) => {
+    await delay()
+    if (payload.bytecode) {
+      return { score: 95, severity: 'LOW', warnings: ['Instruction arity minimal'], dangerous_opcodes: [], gas_cost: 3 }
+    }
+    return { status: 'success', result: { executed: true } }
   }
 }
 
