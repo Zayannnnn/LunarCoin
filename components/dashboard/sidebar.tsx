@@ -19,6 +19,7 @@ import {
   ShieldAlert,
   Cpu,
   Boxes,
+  Vote,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
@@ -34,6 +35,7 @@ const navItems = [
   { href: '/dashboard/mining', label: 'Mining', icon: Pickaxe },
   { href: '/dashboard/contracts', label: 'Smart Contracts', icon: Cpu },
   { href: '/dashboard/dapps', label: 'DApps Workspace', icon: Boxes },
+  { href: '/dashboard/governance', label: 'DAO Governance', icon: Vote },
   { href: '/dashboard/network', label: 'Network', icon: Wifi },
   { href: '/dashboard/reputation', label: 'Node Reputation', icon: ShieldAlert },
 ]

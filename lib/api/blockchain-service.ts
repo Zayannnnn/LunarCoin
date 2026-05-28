@@ -112,6 +112,15 @@ export interface BlockchainApi {
   getDifficultyHistory(hours?: number): Promise<ChartDataPoint[]>
   getFeeHistory(hours?: number): Promise<FeeChartData[]>
   getTpsHistory(hours?: number): Promise<ChartDataPoint[]>
+  createProposal(title: string, description: string, proposal_type: string, param_key: string, param_value: any, deadline_hours: number): Promise<any>
+  voteProposal(proposal_id: string, vote: 'yes' | 'no' | 'abstain'): Promise<any>
+  getProposals(): Promise<{ proposals: any[] }>
+  getProposal(id: string): Promise<any>
+  executeProposal(proposal_id: string): Promise<any>
+  getTreasuryStats(): Promise<{ balance: number; total_allocated: number; history: any[] }>
+  getStakingStats(): Promise<{ total_staked: number; stakers_count: number; apy: number; my_staked: number }>
+  stakeCoins(amount: number): Promise<any>
+  unstakeCoins(amount: number): Promise<any>
 }
 
 const realBlockchainApi: BlockchainApi = {
@@ -333,6 +342,42 @@ const realBlockchainApi: BlockchainApi = {
       params: { hours },
     })
     return (Array.isArray(raw) ? raw : []).map(mapChartPoint)
+  },
+
+  async createProposal(title: string, description: string, proposal_type: string, param_key: string, param_value: any, deadline_hours: number) {
+    return await apiPost<any>('/create-proposal', { title, description, proposal_type, param_key, param_value, deadline_hours })
+  },
+
+  async voteProposal(proposal_id: string, vote: 'yes' | 'no' | 'abstain') {
+    return await apiPost<any>('/vote', { proposal_id, vote })
+  },
+
+  async getProposals() {
+    return await apiGet<{ proposals: any[] }>('/proposals')
+  },
+
+  async getProposal(id: string) {
+    return await apiGet<any>('/proposal/' + id)
+  },
+
+  async executeProposal(proposal_id: string) {
+    return await apiPost<any>('/execute-proposal', { proposal_id })
+  },
+
+  async getTreasuryStats() {
+    return await apiGet<{ balance: number; total_allocated: number; history: any[] }>('/treasury')
+  },
+
+  async getStakingStats() {
+    return await apiGet<{ total_staked: number; stakers_count: number; apy: number; my_staked: number }>('/staking-stats')
+  },
+
+  async stakeCoins(amount: number) {
+    return await apiPost<any>('/stake', { amount })
+  },
+
+  async unstakeCoins(amount: number) {
+    return await apiPost<any>('/unstake', { amount })
   },
 }
 

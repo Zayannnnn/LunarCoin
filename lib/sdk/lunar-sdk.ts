@@ -114,5 +114,68 @@ export class LunarSDK {
   static async fetchBlocks(page = 1, limit = 10): Promise<any> {
     return await blockchainApi.getBlocks(page, limit)
   }
+
+  /**
+   * DAO Proposal Creation
+   */
+  static async createProposal(title: string, description: string, proposal_type: string, param_key: string, param_value: any, deadline_hours = 24): Promise<any> {
+    return await blockchainApi.createProposal(title, description, proposal_type, param_key, param_value, deadline_hours)
+  }
+
+  /**
+   * Cast a vote
+   */
+  static async voteProposal(proposal_id: string, vote: 'yes' | 'no' | 'abstain'): Promise<any> {
+    return await blockchainApi.voteProposal(proposal_id, vote)
+  }
+
+  /**
+   * Fetch all proposals
+   */
+  static async getProposals(): Promise<any> {
+    return await blockchainApi.getProposals()
+  }
+
+  /**
+   * Fetch single proposal details
+   */
+  static async getProposal(id: string): Promise<any> {
+    return await blockchainApi.getProposal(id)
+  }
+
+  /**
+   * Execute passed proposal
+   */
+  static async executeProposal(proposal_id: string): Promise<any> {
+    return await blockchainApi.executeProposal(proposal_id)
+  }
+
+  /**
+   * Fetch treasury data
+   */
+  static async getTreasuryStats(): Promise<any> {
+    return await blockchainApi.getTreasuryStats()
+  }
+
+  /**
+   * Fetch staking statistics
+   */
+  static async getStakingStats(): Promise<any> {
+    return await blockchainApi.getStakingStats()
+  }
+
+  /**
+   * Stake coins
+   */
+  static async stakeCoins(amount: number): Promise<any> {
+    return await blockchainApi.stakeCoins(amount)
+  }
+
+  /**
+   * Unstake coins
+   */
+  static async unstakeCoins(amount: number): Promise<any> {
+    return await blockchainApi.unstakeCoins(amount)
+  }
 }
 export default LunarSDK

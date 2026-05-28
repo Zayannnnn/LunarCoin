@@ -526,6 +526,57 @@ export const mockBlockchainApi = {
       ]
     }
   },
+
+  createProposal: async (title: string, description: string, proposal_type: string, param_key: string, param_value: any, deadline_hours: number) => {
+    await delay()
+    return { status: 'success', proposal: { proposal_id: 'DAO-MOCK', title, description, status: 'active', yes_votes: 0, no_votes: 0, abstain_votes: 0 } }
+  },
+
+  voteProposal: async (proposal_id: string, vote: 'yes' | 'no' | 'abstain') => {
+    await delay()
+    return { status: 'success', proposal: { proposal_id, status: 'active', yes_votes: 10, no_votes: 5, abstain_votes: 1 } }
+  },
+
+  getProposals: async () => {
+    await delay()
+    return { proposals: [
+      { proposal_id: 'DAO-001', title: 'Adjust Gas Limit Cap', description: 'Double gas limits to 4000 units', creator: '0x2FB007CC0E53F181', status: 'active', yes_votes: 45.5, no_votes: 10.2, abstain_votes: 2.0, proposal_type: 'gas_adjustment', param_key: 'gas_limit_cap', param_value: '4000', voting_deadline: new Date(Date.now() + 86400000).toISOString() },
+      { proposal_id: 'DAO-002', title: 'Fund Cyberpunk DApp Payout', description: 'Allocate 10 LUNAR to developer address', creator: '0x2FB007CC0E53F181', status: 'passed', yes_votes: 105.0, no_votes: 0.0, abstain_votes: 5.0, proposal_type: 'treasury_spending', param_key: '', param_value: '0x2FB007CC0E53F181:10.0', voting_deadline: new Date(Date.now() - 3600000).toISOString() }
+    ]}
+  },
+
+  getProposal: async (id: string) => {
+    await delay()
+    return { proposal_id: id, title: 'Mock Proposal', description: 'Mock', status: 'active', yes_votes: 12, no_votes: 2, abstain_votes: 0 }
+  },
+
+  executeProposal: async (proposal_id: string) => {
+    await delay()
+    return { status: 'success', proposal: { proposal_id, status: 'executed', bytecode_execution: '[["PUSH", 4000], ["STORE", "gas_limit_cap"], ["RETURN"]]' } }
+  },
+
+  getTreasuryStats: async () => {
+    await delay()
+    return { balance: 450.5, total_allocated: 120.0, history: [
+      { type: 'inflow', amount: 0.1, timestamp: new Date().toISOString(), block: 100, description: 'Block #100 mining reward allocation' },
+      { type: 'outflow', amount: 10.0, timestamp: new Date(Date.now() - 3600000).toISOString(), block: 99, description: 'Sponsor Cyberpunk DApp Developer Payout' }
+    ]}
+  },
+
+  getStakingStats: async () => {
+    await delay()
+    return { total_staked: 1500.0, stakers_count: 12, apy: 8.0, my_staked: 150.0 }
+  },
+
+  stakeCoins: async (amount: number) => {
+    await delay()
+    return { status: 'success', my_staked: 150.0 + amount, total_staked: 1500.0 + amount }
+  },
+
+  unstakeCoins: async (amount: number) => {
+    await delay()
+    return { status: 'success', my_staked: Math.max(0, 150.0 - amount), total_staked: Math.max(0, 1500.0 - amount) }
+  }
 }
 
 export function generateLiveMiningStats(): LiveMiningStats {
