@@ -394,6 +394,138 @@ export const mockBlockchainApi = {
       ]
     }
   },
+
+  deployContract: async (code: any[], gasLimit: number): Promise<any> => {
+    await delay()
+    return {
+      status: 'queued',
+      message: 'Contract deployment queued for next mined block',
+      contract_address: '0x3C8E' + Math.floor(Math.random() * 900000 + 100000).toString(16).toUpperCase(),
+      transaction: {
+        tx_id: 'tx_mock_deploy_' + Date.now(),
+        type: 'contract_deploy',
+        gas_limit: gasLimit
+      }
+    }
+  },
+
+  executeContract: async (address: string, gasLimit: number): Promise<any> => {
+    await delay()
+    return {
+      status: 'queued',
+      message: 'Contract execution queued for next mined block',
+      contract_address: address,
+      transaction: {
+        tx_id: 'tx_mock_exec_' + Date.now(),
+        type: 'contract_call',
+        gas_limit: gasLimit
+      },
+      preview: {
+        ok: true,
+        result: 42,
+        gas_used: Math.floor(Math.random() * 150 + 50)
+      }
+    }
+  },
+
+  getContracts: async (): Promise<any> => {
+    await delay()
+    return {
+      contracts: [
+        {
+          address: '0x3A5B807CC0E53F18',
+          code: '[["PUSH", 21], ["PUSH", 2], ["MUL"], ["STORE", "answer"], ["LOAD", "answer"], ["RETURN"]]',
+          storage: { answer: 42 },
+          created_block: 10410,
+          creator: '0x2FB007CC0E53F181'
+        },
+        {
+          address: '0x9E7F4C82D1A00C81',
+          code: '[["PUSH", 10], ["STORE", "counter"], ["LOAD", "counter"], ["RETURN"]]',
+          storage: { counter: 10 },
+          created_block: 10415,
+          creator: '0x2FB007CC0E53F181'
+        }
+      ],
+      total: 2,
+      pending_contract_transactions: [],
+      execution_logs: [
+        {
+          timestamp: new Date(Date.now() - 60000).toISOString(),
+          type: 'execute',
+          contract_address: '0x3A5B807CC0E53F18',
+          gas_used: 124,
+          ok: true,
+          message: 'Execution finished successfully'
+        },
+        {
+          timestamp: new Date(Date.now() - 120000).toISOString(),
+          type: 'deploy',
+          contract_address: '0x9E7F4C82D1A00C81',
+          gas_used: 432,
+          ok: true,
+          message: 'Contract deployed successfully'
+        }
+      ]
+    }
+  },
+
+  getContractDetail: async (address: string): Promise<any> => {
+    await delay()
+    return {
+      contract: {
+        address: address,
+        code: '[["PUSH", 21], ["PUSH", 2], ["MUL"], ["STORE", "answer"], ["LOAD", "answer"], ["RETURN"]]',
+        storage: { answer: 42 },
+        created_block: 10410,
+        creator: '0x2FB007CC0E53F181'
+      },
+      state: { answer: 42 },
+      logs: [
+        {
+          timestamp: new Date(Date.now() - 60000).toISOString(),
+          type: 'execute',
+          contract_address: address,
+          gas_used: 124,
+          ok: true,
+          message: 'Execution finished successfully'
+        }
+      ]
+    }
+  },
+
+  getVmStats: async (): Promise<any> => {
+    await delay()
+    return {
+      contracts_per_second: 0.12,
+      last_execution_time_ms: 2.4,
+      avg_gas_used: 278,
+      active_contracts: 2,
+      total_executions: 12,
+      contract_network_activity: {
+        pending_contract_txs: 0,
+        online_peers: 3
+      },
+      execution_logs: [
+        {
+          timestamp: new Date(Date.now() - 60000).toISOString(),
+          type: 'execute',
+          contract_address: '0x3A5B807CC0E53F18',
+          gas_used: 124,
+          ok: true,
+          message: 'Execution finished successfully'
+        },
+        {
+          timestamp: new Date(Date.now() - 120000).toISOString(),
+          type: 'deploy',
+          contract_address: '0x9E7F4C82D1A00C81',
+          gas_used: 432,
+          ok: true,
+          message: 'Contract deployed successfully'
+        }
+      ]
+    }
+  },
 }
 
 export function generateLiveMiningStats(): LiveMiningStats {

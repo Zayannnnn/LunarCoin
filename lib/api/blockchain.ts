@@ -133,6 +133,31 @@ export const blockchainApi: BlockchainApi = {
 		return realBlockchainApi.getFederatedStats()
 	},
 
+	async deployContract(code: any[], gasLimit: number) {
+		if (env.api.useMock) return mockBlockchainApi.deployContract(code, gasLimit)
+		return realBlockchainApi.deployContract(code, gasLimit)
+	},
+
+	async executeContract(address: string, gasLimit: number) {
+		if (env.api.useMock) return mockBlockchainApi.executeContract(address, gasLimit)
+		return realBlockchainApi.executeContract(address, gasLimit)
+	},
+
+	async getContracts() {
+		if (env.api.useMock) return mockBlockchainApi.getContracts()
+		return realBlockchainApi.getContracts()
+	},
+
+	async getContractDetail(address: string) {
+		if (env.api.useMock) return mockBlockchainApi.getContractDetail(address)
+		return realBlockchainApi.getContractDetail(address)
+	},
+
+	async getVmStats() {
+		if (env.api.useMock) return mockBlockchainApi.getVmStats()
+		return realBlockchainApi.getVmStats()
+	},
+
 	async getHashRateHistory(hours?: number) {
 		if (env.api.useMock) return mockBlockchainApi.getHashRateHistory(hours)
 		return realBlockchainApi.getHashRateHistory(hours)

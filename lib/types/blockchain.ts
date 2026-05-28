@@ -226,3 +226,35 @@ export interface NodeReputation {
   blacklisted: boolean
 }
 
+export interface DeployedContract {
+  address: string
+  code: any[] | string
+  storage: Record<string, any>
+  created_block: number
+  creator?: string
+  gas_limit?: number
+}
+
+export interface VmExecutionLog {
+  timestamp: string
+  type: string
+  contract_address: string
+  gas_used: number
+  ok: boolean
+  message?: string
+  result?: any
+}
+
+export interface VmStats {
+  contracts_per_second: number
+  last_execution_time_ms: number
+  avg_gas_used: number
+  active_contracts: number
+  total_executions: number
+  contract_network_activity: {
+    pending_contract_txs: number
+    online_peers: number
+  }
+  execution_logs?: VmExecutionLog[]
+}
+

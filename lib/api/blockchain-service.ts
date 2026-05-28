@@ -44,6 +44,9 @@ import type {
   WalletHistoryItem,
   NetworkHealth,
   NodeReputation,
+  DeployedContract,
+  VmExecutionLog,
+  VmStats,
 } from '@/lib/types/blockchain'
 import type {
   BackendBlock,
@@ -100,6 +103,11 @@ export interface BlockchainApi {
   getNetworkHealth(): Promise<NetworkHealth>
   getNodeReputation(): Promise<{ reputations: NodeReputation[] }>
   getFederatedStats(): Promise<any>
+  deployContract(code: any[], gasLimit: number): Promise<any>
+  executeContract(address: string, gasLimit: number): Promise<any>
+  getContracts(): Promise<{ contracts: DeployedContract[]; total: number; pending_contract_transactions: any[]; execution_logs: VmExecutionLog[] }>
+  getContractDetail(address: string): Promise<{ contract: DeployedContract; state: Record<string, any>; logs: VmExecutionLog[] } | null>
+  getVmStats(): Promise<VmStats>
   getHashRateHistory(hours?: number): Promise<ChartDataPoint[]>
   getDifficultyHistory(hours?: number): Promise<ChartDataPoint[]>
   getFeeHistory(hours?: number): Promise<FeeChartData[]>
@@ -273,6 +281,30 @@ const realBlockchainApi: BlockchainApi = {
 
   async getFederatedStats() {
     return await apiGet<any>(endpoints.federatedStats)
+  },
+
+  async deployContract(code: any[], gasLimit: number) {
+    return await apiPost<any>(endpoints.deployContract, { code, gas_limit: gasLimit })
+  },
+
+  async executeContract(address: string, gasLimit: number) {
+    return await apiPost<any>(endpoints.executeContract, { contract_address: address, gas_limit: gasLimit })
+  },
+
+  async getContracts() {
+    return await apiGet<any>(endpoints.contracts)
+  },
+
+  async getContractDetail(address: string) {
+    try {
+      return await apiGet<any>(endpoints.contractDetail(address))
+    } catch {
+      return null
+    }
+  },
+
+  async getVmStats() {
+    return await apiGet<VmStats>(endpoints.vmStats)
   },
 
   async getHashRateHistory(hours = 24) {

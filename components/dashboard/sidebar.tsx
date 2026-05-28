@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldAlert,
+  Cpu,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
@@ -30,6 +31,7 @@ const navItems = [
   { href: '/dashboard/mempool', label: 'Mempool', icon: Layers },
   { href: '/dashboard/fees', label: 'Fees', icon: TrendingUp },
   { href: '/dashboard/mining', label: 'Mining', icon: Pickaxe },
+  { href: '/dashboard/contracts', label: 'Smart Contracts', icon: Cpu },
   { href: '/dashboard/network', label: 'Network', icon: Wifi },
   { href: '/dashboard/reputation', label: 'Node Reputation', icon: ShieldAlert },
 ]
