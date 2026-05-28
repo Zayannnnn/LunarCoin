@@ -177,5 +177,54 @@ export class LunarSDK {
   static async unstakeCoins(amount: number): Promise<any> {
     return await blockchainApi.unstakeCoins(amount)
   }
+
+  /**
+   * Upload file to LunarFS
+   */
+  static async uploadFile(formData: FormData): Promise<any> {
+    return await blockchainApi.uploadFile(formData)
+  }
+
+  /**
+   * Mint NFT media asset
+   */
+  static async mintNFT(name: string, description: string, content_hash: string, properties?: any): Promise<any> {
+    return await blockchainApi.mintNFT(name, description, content_hash, properties)
+  }
+
+  /**
+   * Fetch all minted NFTs
+   */
+  static async fetchNFTs(): Promise<any> {
+    return await blockchainApi.getNFTs()
+  }
+
+  /**
+   * Fetch single NFT details
+   */
+  static async fetchNFT(id: string): Promise<any> {
+    return await blockchainApi.getNFT(id)
+  }
+
+  /**
+   * Fetch all files in LunarFS
+   */
+  static async fetchFiles(): Promise<any> {
+    return await blockchainApi.getFiles()
+  }
+
+  /**
+   * Pin a file in LunarFS
+   */
+  static async pinFile(hash: string): Promise<any> {
+    return await blockchainApi.pinFile(hash)
+  }
+
+  /**
+   * Unpin a file in LunarFS
+   */
+  static async unpinFile(hash: string): Promise<any> {
+    return await blockchainApi.unpinFile(hash)
+  }
 }
 export default LunarSDK

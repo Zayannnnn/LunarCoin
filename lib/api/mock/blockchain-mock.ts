@@ -576,6 +576,47 @@ export const mockBlockchainApi = {
   unstakeCoins: async (amount: number) => {
     await delay()
     return { status: 'success', my_staked: Math.max(0, 150.0 - amount), total_staked: Math.max(0, 1500.0 - amount) }
+  },
+
+  uploadFile: async (formData: FormData) => {
+    await delay()
+    return { status: 'success', metadata: { content_hash: 'LFS-MOCK' + generateHash().slice(0, 16), filename: 'cyber-artwork.png', size: 102400, creator: '0x2FB007CC0E53F181', chunks: ['CHK-MOCK-1', 'CHK-MOCK-2'], pinned: true, replicas: ['127.0.0.1:5000', '192.168.1.100:5000'] } }
+  },
+
+  mintNFT: async (name: string, description: string, content_hash: string, properties?: any) => {
+    await delay()
+    return { status: 'success', nft: { id: 'NFT-MOCK' + generateHash().slice(0, 8), name, description, content_hash, creator: '0x2FB007CC0E53F181', owner: '0x2FB007CC0E53F181', timestamp: new Date().toISOString(), contract_address: 'LC' + generateHash().slice(0, 16) } }
+  },
+
+  getNFTs: async () => {
+    await delay()
+    return { nfts: [
+      { id: 'NFT-001', name: 'Cyber Neon Genesis', description: 'The first graphical NFT asset on LunarCoin network', creator: '0x2FB007CC0E53F181', owner: '0x2FB007CC0E53F181', content_hash: 'LFS-NEONGENESIS', contract_address: 'LC84A7F9D2E1C0A1B2', timestamp: new Date(Date.now() - 86400000).toISOString() },
+      { id: 'NFT-002', name: 'Lunar Core Mechanism', description: 'Breathtaking 3D telemetry interface blueprint', creator: '0x2FB007CC0E53F181', owner: '0x2FB007CC0E53F181', content_hash: 'LFS-LUNARCORE', contract_address: 'LC99F4D2E1A1B2C0D4', timestamp: new Date(Date.now() - 3600000).toISOString() }
+    ]}
+  },
+
+  getNFT: async (id: string) => {
+    await delay()
+    return { id, name: 'Mock Collectible', description: 'Mock Description', creator: '0x2FB007CC0E53F181', owner: '0x2FB007CC0E53F181', content_hash: 'LFS-MOCK', timestamp: new Date().toISOString() }
+  },
+
+  getFiles: async () => {
+    await delay()
+    return { files: [
+      { content_hash: 'LFS-NEONGENESIS', filename: 'cyber-neon-genesis.png', size: 124500, creator: '0x2FB007CC0E53F181', chunks: ['CHK-NEON1', 'CHK-NEON2'], pinned: true, replicas: ['127.0.0.1:5000', '192.168.1.102:5000', '192.168.1.201:5000'], timestamp: Date.now() / 1000 - 86400 },
+      { content_hash: 'LFS-LUNARCORE', filename: 'lunar-core-telemetry.pdf', size: 450300, creator: '0x2FB007CC0E53F181', chunks: ['CHK-CORE1', 'CHK-CORE2', 'CHK-CORE3'], pinned: true, replicas: ['127.0.0.1:5000', '192.168.1.102:5000'], timestamp: Date.now() / 1000 - 3600 }
+    ]}
+  },
+
+  pinFile: async (hash: string) => {
+    await delay()
+    return { status: 'success', pinned: true }
+  },
+
+  unpinFile: async (hash: string) => {
+    await delay()
+    return { status: 'success', pinned: false }
   }
 }
 

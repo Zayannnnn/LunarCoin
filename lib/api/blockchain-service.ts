@@ -121,6 +121,13 @@ export interface BlockchainApi {
   getStakingStats(): Promise<{ total_staked: number; stakers_count: number; apy: number; my_staked: number }>
   stakeCoins(amount: number): Promise<any>
   unstakeCoins(amount: number): Promise<any>
+  uploadFile(formData: FormData): Promise<any>
+  mintNFT(name: string, description: string, content_hash: string, properties?: any): Promise<any>
+  getNFTs(): Promise<{ nfts: any[] }>
+  getNFT(id: string): Promise<any>
+  getFiles(): Promise<{ files: any[] }>
+  pinFile(hash: string): Promise<any>
+  unpinFile(hash: string): Promise<any>
 }
 
 const realBlockchainApi: BlockchainApi = {
@@ -378,6 +385,34 @@ const realBlockchainApi: BlockchainApi = {
 
   async unstakeCoins(amount: number) {
     return await apiPost<any>('/unstake', { amount })
+  },
+
+  async uploadFile(formData: FormData) {
+    return await apiPost<any>('/upload-file', formData)
+  },
+
+  async mintNFT(name: string, description: string, content_hash: string, properties?: any) {
+    return await apiPost<any>('/mint-nft', { name, description, content_hash, properties })
+  },
+
+  async getNFTs() {
+    return await apiGet<{ nfts: any[] }>('/nfts')
+  },
+
+  async getNFT(id: string) {
+    return await apiGet<any>('/nft/' + id)
+  },
+
+  async getFiles() {
+    return await apiGet<{ files: any[] }>('/files')
+  },
+
+  async pinFile(hash: string) {
+    return await apiPost<any>(`/file/${hash}/pin`)
+  },
+
+  async unpinFile(hash: string) {
+    return await apiPost<any>(`/file/${hash}/unpin`)
   },
 }
 

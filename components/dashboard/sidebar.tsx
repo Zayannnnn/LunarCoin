@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
+import NextImage from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
@@ -20,6 +20,7 @@ import {
   Cpu,
   Boxes,
   Vote,
+  Image,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
@@ -36,6 +37,7 @@ const navItems = [
   { href: '/dashboard/contracts', label: 'Smart Contracts', icon: Cpu },
   { href: '/dashboard/dapps', label: 'DApps Workspace', icon: Boxes },
   { href: '/dashboard/governance', label: 'DAO Governance', icon: Vote },
+  { href: '/dashboard/nfts', label: 'NFT & Storage', icon: Image },
   { href: '/dashboard/network', label: 'Network', icon: Wifi },
   { href: '/dashboard/reputation', label: 'Node Reputation', icon: ShieldAlert },
 ]
@@ -58,7 +60,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-sidebar-border">
         <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
-          <Image 
+          <NextImage 
             src="https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png" 
             alt="LunarScan Logo" 
             width={36} 

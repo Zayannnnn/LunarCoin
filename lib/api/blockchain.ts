@@ -177,6 +177,86 @@ export const blockchainApi: BlockchainApi = {
 		if (env.api.useMock) return mockBlockchainApi.getTpsHistory(hours)
 		return realBlockchainApi.getTpsHistory(hours)
 	},
+
+	async createProposal(title: string, description: string, proposal_type: string, param_key: string, param_value: any, deadline_hours: number) {
+		if (env.api.useMock) return mockBlockchainApi.createProposal(title, description, proposal_type, param_key, param_value, deadline_hours)
+		return realBlockchainApi.createProposal(title, description, proposal_type, param_key, param_value, deadline_hours)
+	},
+
+	async voteProposal(proposal_id: string, vote: 'yes' | 'no' | 'abstain') {
+		if (env.api.useMock) return mockBlockchainApi.voteProposal(proposal_id, vote)
+		return realBlockchainApi.voteProposal(proposal_id, vote)
+	},
+
+	async getProposals() {
+		if (env.api.useMock) return mockBlockchainApi.getProposals()
+		return realBlockchainApi.getProposals()
+	},
+
+	async getProposal(id: string) {
+		if (env.api.useMock) return mockBlockchainApi.getProposal(id)
+		return realBlockchainApi.getProposal(id)
+	},
+
+	async executeProposal(proposal_id: string) {
+		if (env.api.useMock) return mockBlockchainApi.executeProposal(proposal_id)
+		return realBlockchainApi.executeProposal(proposal_id)
+	},
+
+	async getTreasuryStats() {
+		if (env.api.useMock) return mockBlockchainApi.getTreasuryStats()
+		return realBlockchainApi.getTreasuryStats()
+	},
+
+	async getStakingStats() {
+		if (env.api.useMock) return mockBlockchainApi.getStakingStats()
+		return realBlockchainApi.getStakingStats()
+	},
+
+	async stakeCoins(amount: number) {
+		if (env.api.useMock) return mockBlockchainApi.stakeCoins(amount)
+		return realBlockchainApi.stakeCoins(amount)
+	},
+
+	async unstakeCoins(amount: number) {
+		if (env.api.useMock) return mockBlockchainApi.unstakeCoins(amount)
+		return realBlockchainApi.unstakeCoins(amount)
+	},
+
+	async uploadFile(formData: FormData) {
+		if (env.api.useMock) return mockBlockchainApi.uploadFile(formData)
+		return realBlockchainApi.uploadFile(formData)
+	},
+
+	async mintNFT(name: string, description: string, content_hash: string, properties?: any) {
+		if (env.api.useMock) return mockBlockchainApi.mintNFT(name, description, content_hash, properties)
+		return realBlockchainApi.mintNFT(name, description, content_hash, properties)
+	},
+
+	async getNFTs() {
+		if (env.api.useMock) return mockBlockchainApi.getNFTs()
+		return realBlockchainApi.getNFTs()
+	},
+
+	async getNFT(id: string) {
+		if (env.api.useMock) return mockBlockchainApi.getNFT(id)
+		return realBlockchainApi.getNFT(id)
+	},
+
+	async getFiles() {
+		if (env.api.useMock) return mockBlockchainApi.getFiles()
+		return realBlockchainApi.getFiles()
+	},
+
+	async pinFile(hash: string) {
+		if (env.api.useMock) return mockBlockchainApi.pinFile(hash)
+		return realBlockchainApi.pinFile(hash)
+	},
+
+	async unpinFile(hash: string) {
+		if (env.api.useMock) return mockBlockchainApi.unpinFile(hash)
+		return realBlockchainApi.unpinFile(hash)
+	},
 }
 
 export type { BlockchainApi }
