@@ -91,6 +91,7 @@ export default function SmartContractsPage() {
     if (!inspectedContract) return
     let active = true
     async function reloadInspectDetail() {
+      if (!inspectedContract) return
       try {
         const detail = await blockchainApi.getContractDetail(inspectedContract.address)
         if (detail && active) {

@@ -989,7 +989,7 @@ export default function GovernanceDashboardPage() {
                         {prop.proposal_type.replace('_', ' ')}
                       </Badge>
                       <Badge 
-                        variant="ghost" 
+                        variant="outline" 
                         className={cn(
                           "text-[9px] uppercase font-bold",
                           prop.status === 'active' ? 'text-amber-400 bg-amber-400/5 animate-pulse' : 

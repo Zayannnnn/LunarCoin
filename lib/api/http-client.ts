@@ -3,6 +3,7 @@ import { ApiError } from '@/lib/api/errors'
 
 export interface RequestOptions extends Omit<RequestInit, 'body'> {
   params?: Record<string, string | number | boolean | undefined>
+  body?: any
   timeoutMs?: number
   retries?: number
   retryDelayMs?: number
@@ -56,6 +57,7 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const {
     params,
+    body,
     timeoutMs = env.api.timeoutMs,
     retries = env.api.maxRetries,
     retryDelayMs = env.api.retryDelayMs,
@@ -79,11 +81,13 @@ export async function apiRequest<T>(
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
     try {
+      const isFormData = body instanceof FormData
       const response = await fetch(url, {
         ...init,
+        body: isFormData ? body : (body !== undefined ? JSON.stringify(body) : undefined),
         headers: {
           Accept: 'application/json',
-          'Content-Type': 'application/json',
+          ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
           ...headers,
         },
         signal: controller.signal,
@@ -163,6 +167,6 @@ export function apiGet<T>(path: string, options?: RequestOptions): Promise<T> {
   return apiRequest<T>(path, { ...options, method: 'GET' })
 }
 
-export function apiPost<T>(path: string, options?: RequestOptions): Promise<T> {
-  return apiRequest<T>(path, { ...options, method: 'POST' })
+export function apiPost<T>(path: string, body?: any, options?: RequestOptions): Promise<T> {
+  return apiRequest<T>(path, { ...options, method: 'POST', body })
 }

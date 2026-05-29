@@ -216,7 +216,7 @@ export default function SendCoinsPage() {
                         <Button 
                           type="button" 
                           variant="ghost" 
-                          size="xs" 
+                          size="sm" 
                           onClick={() => {
                             if (wallet) {
                               const maxAmount = Math.max(0, wallet.balance - 0.0001)
