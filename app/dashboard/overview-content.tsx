@@ -11,6 +11,7 @@ import {
   Database,
   ArrowRight,
   Activity,
+  Pickaxe,
 } from 'lucide-react'
 import { StatsCard } from '@/components/dashboard/stats-card'
 import { ChartCard } from '@/components/dashboard/chart-card'
@@ -25,6 +26,7 @@ import { LiveBadge } from '@/components/dashboard/live-badge'
 import { OverviewSkeleton } from '@/components/dashboard/overview-skeleton'
 import { ApiErrorBanner } from '@/components/dashboard/api-error-banner'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useOverviewDashboard } from '@/hooks/use-overview-dashboard'
 import {
   LineChart,
@@ -43,6 +45,7 @@ import {
   tooltipStyle,
   axisProps,
 } from '@/components/dashboard/chart-theme'
+import { cn } from '@/lib/utils'
 
 function formatNumber(num: number): string {
   if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T'
@@ -96,46 +99,86 @@ export function OverviewContent() {
   }))
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-6 md:space-y-8 font-mono select-none">
       <ApiErrorBanner error={error} onRetry={refetch} />
 
       <div className="animate-slide-up">
         <SearchHero />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatsCard
-          title="Chain Height"
-          value={`#${stats.chainHeight.toLocaleString()}`}
-          subtitle="Latest confirmed block"
-          icon={Blocks}
-          pulse
-          delay={50}
-        />
+      {/* Central Engineering HUD focusing on CPU Mining */}
+      <Card className="bg-card/35 border border-border/30 overflow-hidden font-mono text-xs card-glow">
+        <div className="bg-black/25 border-b border-border/20 px-5 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Pickaxe className="h-4.5 w-4.5 text-primary animate-pulse" />
+            <span className="font-bold text-sm tracking-wider uppercase">Local CPU Mining Node Status</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <div className={cn(
+              "h-2 w-2 rounded-full",
+              mining?.mining ? "bg-emerald-500 shadow-[0_0_8px_#10b981]" : "bg-muted-foreground animate-pulse"
+            )} />
+            <span className={cn(
+              "font-bold uppercase text-[10px] tracking-widest",
+              mining?.mining ? "text-emerald-400" : "text-muted-foreground"
+            )}>
+              {mining?.mining ? "Active Mining Thread" : "Node Standby"}
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 lg:divide-x divide-border/20">
+          <div className="p-5 flex flex-col justify-between h-[100px] hover:bg-white/[0.01] transition-colors">
+            <span className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider">Node Hash Rate</span>
+            <div className="text-xl font-bold font-mono text-cyan-400">
+              {mining?.mining ? `${(mining.hashrate).toFixed(2)} H/s` : "0.00 H/s"}
+            </div>
+            <span className="text-[9px] text-muted-foreground/60 uppercase">Real CPU hashes per second</span>
+          </div>
+
+          <div className="p-5 flex flex-col justify-between h-[100px] hover:bg-white/[0.01] transition-colors">
+            <span className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider">Consensus Difficulty</span>
+            <div className="text-xl font-bold font-mono text-amber-400 tracking-widest">
+              {stats.difficulty ? "0".repeat(stats.difficulty) : "0000"}
+            </div>
+            <span className="text-[9px] text-muted-foreground/60 uppercase">Leading zero mask target</span>
+          </div>
+
+          <div className="p-5 flex flex-col justify-between h-[100px] hover:bg-white/[0.01] transition-colors">
+            <span className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider">Mined This Session</span>
+            <div className="text-xl font-bold font-mono text-emerald-400">
+              {mining?.blocks_mined || 0} Blocks
+            </div>
+            <span className="text-[9px] text-muted-foreground/60 uppercase">Reward weight locks committed</span>
+          </div>
+
+          <div className="p-5 flex flex-col justify-between h-[100px] hover:bg-white/[0.01] transition-colors">
+            <span className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider">Ledger Tip Height</span>
+            <div className="text-xl font-bold font-mono text-foreground">
+              #{stats.chainHeight.toLocaleString()}
+            </div>
+            <span className="text-[9px] text-muted-foreground/60 uppercase">Total confirmed blocks</span>
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Network TPS"
           value={stats.tps.toFixed(1)}
           subtitle="Transactions per second"
           icon={Activity}
+          compact
           delay={100}
-        />
-        <StatsCard
-          title="Hash Rate"
-          value={stats.hashRate}
-          subtitle="Total network power"
-          icon={Zap}
-          delay={150}
         />
         <StatsCard
           title="Connected Peers"
           value={formatNumber(stats.connectedPeers)}
           subtitle={`${peers.length} visible nodes`}
           icon={Wifi}
+          compact
           delay={200}
         />
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatsCard
           title="Block Time"
           value={`${stats.avgBlockTime.toFixed(1)}s`}
@@ -152,23 +195,8 @@ export function OverviewContent() {
           compact
           delay={300}
         />
-        <StatsCard
-          title="Supply"
-          value={formatNumber(stats.circulatingSupply)}
-          subtitle={`of ${formatNumber(stats.totalSupply)}`}
-          icon={Database}
-          compact
-          delay={350}
-        />
-        <StatsCard
-          title="Avg Fee"
-          value={`${(stats.avgFee * 1e6).toFixed(2)} μLUNAR`}
-          subtitle="Per transaction"
-          icon={TrendingUp}
-          compact
-          delay={400}
-        />
       </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard title="Network TPS" description="Live transaction throughput (24h)" live delay={450}>
