@@ -5,7 +5,6 @@
 import { env } from '@/lib/config/env'
 import { apiGet, apiPost } from '@/lib/api/http-client'
 import { endpoints } from '@/lib/api/endpoints'
-import { mockBlockchainApi } from '@/lib/api/mock/blockchain-mock'
 import {
   mapBlock,
   mapTransaction,
@@ -436,9 +435,6 @@ const realBlockchainApi: BlockchainApi = {
   },
 }
 
-/** Active API — real backend unless mock flag is set */
-export const blockchainApi: BlockchainApi = env.api.useMock
-  ? mockBlockchainApi
-  : realBlockchainApi
-
-export { realBlockchainApi, mockBlockchainApi }
+// Active API — points directly and exclusively to the real backend
+export const blockchainApi: BlockchainApi = realBlockchainApi
+export { realBlockchainApi }

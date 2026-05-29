@@ -31,7 +31,7 @@ export const env = {
       return rawWsUrl
     })(),
     /** Use mock generators when backend is unavailable (dev only) */
-    useMock: process.env.NEXT_PUBLIC_USE_MOCK_API === 'true',
+    useMock: false,
     /** Request timeout in ms */
     timeoutMs: Number(process.env.NEXT_PUBLIC_API_TIMEOUT_MS ?? 15000),
     /** Max retry attempts for failed requests */
