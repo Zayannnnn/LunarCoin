@@ -1,6 +1,6 @@
 {
   "name": "lunar-coin-blockchain-explorer",
-  "productName": "LunarCoin Desktop Miner",
+  "productName": "LunarCoin Miner",
   "version": "0.1.0",
   "private": true,
   "main": "electron/main.js",
@@ -18,7 +18,7 @@
   },
   "build": {
     "appId": "com.lunarcoin.desktopminer",
-    "productName": "LunarCoin Desktop Miner",
+    "productName": "LunarCoin Miner",
     "directories": {
       "output": "release"
     },
@@ -61,6 +61,13 @@
         "zip"
       ],
       "icon": "public/images/lunar-logo.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "LunarCoin Miner"
     }
   },
   "dependencies": {

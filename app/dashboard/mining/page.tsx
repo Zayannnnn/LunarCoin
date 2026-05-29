@@ -569,7 +569,7 @@ export default function MiningPage() {
       ) : (
         <>
           {/* Main Status Header Panel */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             
             {/* Engine status Card */}
             <Card className={`bg-card/50 border-border/50 overflow-hidden transition-all duration-500 xl:col-span-1 ${miningActive ? 'card-glow border-primary/40 shadow-lg shadow-primary/10' : ''}`}>
@@ -591,6 +591,26 @@ export default function MiningPage() {
                     <h2 className={`text-xl font-extrabold capitalize ${miningActive ? 'text-primary' : 'text-muted-foreground'}`}>
                       {miningActive ? 'Mining Running' : 'Miner Stopped'}
                     </h2>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Local CPU Mining Status Card */}
+            <Card className="bg-card/50 border-border/50 card-glow overflow-hidden xl:col-span-1">
+              <CardContent className="p-4 flex flex-col justify-center h-full min-h-[92px]">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center border-b border-border/10 pb-1.5">
+                    <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Mining Mode</span>
+                    <span className="text-[10px] font-mono font-extrabold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded">LOCAL CPU MINING</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-border/10 pb-1.5">
+                    <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Storage</span>
+                    <span className="text-[10px] font-mono font-extrabold text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 px-1.5 py-0.5 rounded">LOCAL BLOCKCHAIN</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Cloud Cost</span>
+                    <span className="text-[10px] font-mono font-extrabold text-green-400 bg-green-400/10 border border-green-400/20 px-1.5 py-0.5 rounded">ZERO</span>
                   </div>
                 </div>
               </CardContent>

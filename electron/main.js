@@ -113,7 +113,8 @@ async function startBackend() {
     throw new Error('Unable to find local LunarMiner backend api.py')
   }
 
-  backendProcess = spawnProcess('python3', ['api.py'], {
+  const pythonCmd = process.platform === 'win32' ? 'python' : 'python3'
+  backendProcess = spawnProcess(pythonCmd, ['api.py'], {
     cwd: backendDir,
     env: {
       ...process.env,
@@ -156,7 +157,7 @@ function createWindow() {
     height: 900,
     minWidth: 1024,
     minHeight: 720,
-    title: 'LunarCoin Desktop Miner',
+    title: 'LunarCoin Miner',
     backgroundColor: '#05070d',
     icon: path.join(app.getAppPath(), 'public', 'images', 'lunar-logo.png'),
     show: false,

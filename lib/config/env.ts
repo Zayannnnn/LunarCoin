@@ -15,21 +15,27 @@ export const env = {
     anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
   },
   api: {
-    baseUrl: (() => {
+    get baseUrl(): string {
+      if (typeof window !== 'undefined' && (window as any).lunarDesktop) {
+        return ((window as any).lunarDesktop.backendUrl || 'http://127.0.0.1:5000').replace(/\/$/, '')
+      }
       const rawUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5000'
       const normalized = rawUrl.replace(/\/$/, '')
       if (!/^https?:\/\//i.test(normalized)) {
         throw new Error('NEXT_PUBLIC_API_URL must use http:// or https://')
       }
       return normalized
-    })(),
-    wsUrl: (() => {
+    },
+    get wsUrl(): string {
+      if (typeof window !== 'undefined' && (window as any).lunarDesktop) {
+        return 'ws://127.0.0.1:5000'
+      }
       const rawWsUrl = process.env.NEXT_PUBLIC_WS_URL ?? ''
       if (rawWsUrl && !/^wss?:\/\//i.test(rawWsUrl)) {
         throw new Error('NEXT_PUBLIC_WS_URL must use ws:// or wss://')
       }
       return rawWsUrl
-    })(),
+    },
     /** Use mock generators when backend is unavailable (dev only) */
     useMock: false,
     /** Request timeout in ms */
