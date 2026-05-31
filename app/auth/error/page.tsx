@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { AlertTriangle, Moon } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default async function AuthErrorPage({
   searchParams,
@@ -19,8 +20,14 @@ export default async function AuthErrorPage({
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
             <Link href="/" className="flex items-center gap-3">
-              <Moon className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold text-gradient-primary">LunarScan</span>
+              <Image
+                src="https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png"
+                alt="LunarCoin Logo"
+                width={32}
+                height={32}
+                className="rounded-full"
+              />
+              <span className="text-2xl font-bold text-gradient-primary">LunarCoin</span>
             </Link>
           </div>
           <div className="flex justify-center">

@@ -28,15 +28,15 @@ function LoginForm() {
           <div className="flex items-center gap-3">
             <Image
               src="https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png"
-              alt="LunarScan Logo"
+              alt="LunarCoin Logo"
               width={48}
               height={48}
               className="rounded-full"
             />
-            <span className="text-3xl font-bold text-gradient-primary">LunarScan</span>
+            <span className="text-3xl font-bold text-gradient-primary">LunarCoin</span>
           </div>
         </div>
-        <CardTitle className="text-xl text-foreground">Welcome to LunarScan</CardTitle>
+        <CardTitle className="text-xl text-foreground">Welcome to LunarCoin</CardTitle>
         <CardDescription className="text-muted-foreground">
           Sign in to explore the Lunar Chain blockchain. View blocks, transactions, and network statistics.
         </CardDescription>

@@ -81,14 +81,14 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
           <NextImage 
             src="https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png" 
-            alt="LunarScan Logo" 
+            alt="LunarCoin Logo" 
             width={32} 
             height={32} 
             className="rounded-full shrink-0"
           />
           {!collapsed && (
             <span className="text-lg font-bold font-mono tracking-wider text-primary whitespace-nowrap">
-              LunarScan
+              LunarCoin
             </span>
           )}
         </Link>

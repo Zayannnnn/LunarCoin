@@ -15,10 +15,10 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'LunarScan | Lunar Chain Explorer',
+  title: 'LunarCoin Explorer | Lunar Chain Explorer',
   description: 'Explore blocks, transactions, and network statistics on Lunar Chain. The official blockchain explorer for Lunar Coin.',
   keywords: ['blockchain', 'explorer', 'lunar coin', 'lunar chain', 'crypto', 'transactions', 'blocks'],
-  authors: [{ name: 'LunarScan Team' }],
+  authors: [{ name: 'LunarCoin Team' }],
   icons: {
     icon: [
       {
@@ -35,6 +35,28 @@ export const metadata: Metadata = {
       },
     ],
     apple: '/apple-icon.png',
+  },
+  openGraph: {
+    title: 'LunarCoin Explorer | Lunar Chain Explorer',
+    description: 'Explore blocks, transactions, and network statistics on Lunar Chain. The official blockchain explorer for Lunar Coin.',
+    url: 'https://explorer.lunarcoin.com',
+    siteName: 'LunarCoin Explorer',
+    images: [
+      {
+        url: 'https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png',
+        width: 800,
+        height: 800,
+        alt: 'LunarCoin Logo',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'LunarCoin Explorer | Lunar Chain Explorer',
+    description: 'Explore blocks, transactions, and network statistics on Lunar Chain. The official blockchain explorer for Lunar Coin.',
+    images: ['https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png'],
   },
 }
 

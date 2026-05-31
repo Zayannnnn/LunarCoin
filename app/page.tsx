@@ -526,7 +526,7 @@ export default async function LandingPage() {
                   <span className="h-2.5 w-2.5 rounded-full bg-border" />
                   <span className="h-2.5 w-2.5 rounded-full bg-border" />
                 </div>
-                <span className="text-[10px] font-mono text-muted-foreground">LunarScan Block Explorer - Local Dashboard</span>
+                <span className="text-[10px] font-mono text-muted-foreground">LunarCoin Explorer - Local Dashboard</span>
                 <span className="w-10" />
               </div>
 
