@@ -26,7 +26,9 @@ export function ApiErrorBanner({ error, onRetry, className }: ApiErrorBannerProp
       <div className="flex items-start gap-3">
         <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-destructive">Failed to load blockchain data</p>
+          <p className="text-sm font-medium text-destructive">
+            {error.isNetworkError || error.code === 'TIMEOUT' ? 'Backend unavailable' : 'Failed to load blockchain data'}
+          </p>
           <p className="text-xs text-muted-foreground mt-0.5">{error.message}</p>
           {error.isNetworkError && (
             <p className="text-xs text-muted-foreground mt-1">

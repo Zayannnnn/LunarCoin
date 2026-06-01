@@ -1,5 +1,6 @@
 import { OverviewContent } from './overview-content'
 import { LiveBadge } from '@/components/dashboard/live-badge'
+import { MinerStatusBadge } from '@/components/dashboard/miner-status-badge'
 
 export default function DashboardOverviewPage() {
   return (
@@ -16,10 +17,7 @@ export default function DashboardOverviewPage() {
             Real-time statistics and activity on Lunar Chain mainnet
           </p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass-card border border-success/20 w-fit">
-          <div className="h-2 w-2 rounded-full bg-success pulse-live" />
-          <span className="text-xs text-success font-medium">Mainnet Online</span>
-        </div>
+        <MinerStatusBadge />
       </div>
 
       <OverviewContent />

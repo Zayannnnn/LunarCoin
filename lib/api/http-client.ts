@@ -74,93 +74,125 @@ export async function apiRequest<T>(
     })
   }
 
-  let lastError: ApiError | null = null
+  const runRequest = async (): Promise<T> => {
+    let lastError: ApiError | null = null
 
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
-
-    try {
-      const isFormData = body instanceof FormData
-      const response = await fetch(url, {
-        ...init,
-        body: isFormData ? body : (body !== undefined ? JSON.stringify(body) : undefined),
-        headers: {
-          Accept: 'application/json',
-          ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-          ...headers,
-        },
-        signal: controller.signal,
-      })
-
-      clearTimeout(timeoutId)
-      console.log('Fetching:', url)
-      console.log('Response:', response)
-
-      if (!response.ok) {
-        const error = await parseErrorResponse(response)
-        if (error.isRetryable && attempt < retries) {
-          lastError = error
-          await sleep(retryDelayMs * Math.pow(2, attempt))
-          continue
-        }
-        throw error
-      }
-
-      if (response.status === 204) {
-        return undefined as T
-      }
-
-      const rawText = await response.text()
-      let data: unknown
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
       try {
-        data = rawText ? JSON.parse(rawText) : undefined
-      } catch (error) {
-        throw new ApiError('Failed to parse JSON response', {
-          status: response.status,
-          code: 'INVALID_JSON',
-          details: rawText,
+        const isFormData = body instanceof FormData
+        const response = await fetch(url, {
+          ...init,
+          body: isFormData ? body : (body !== undefined ? JSON.stringify(body) : undefined),
+          headers: {
+            Accept: 'application/json',
+            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+            ...headers,
+          },
+          signal: controller.signal,
         })
-      }
 
-      console.log('Parsed data:', data)
-      return data as T
-    } catch (error) {
-      clearTimeout(timeoutId)
+        clearTimeout(timeoutId)
+        console.log('Fetching:', url)
+        console.log('Response:', response)
 
-      if (error instanceof ApiError) {
-        if (error.isRetryable && attempt < retries) {
-          lastError = error
+        if (!response.ok) {
+          const error = await parseErrorResponse(response)
+          if (error.isRetryable && attempt < retries) {
+            lastError = error
+            await sleep(retryDelayMs * Math.pow(2, attempt))
+            continue
+          }
+          throw error
+        }
+
+        if (response.status === 204) {
+          return undefined as T
+        }
+
+        const rawText = await response.text()
+        let data: unknown
+
+        try {
+          data = rawText ? JSON.parse(rawText) : undefined
+        } catch (error) {
+          throw new ApiError('Failed to parse JSON response', {
+            status: response.status,
+            code: 'INVALID_JSON',
+            details: rawText,
+          })
+        }
+
+        console.log('Parsed data:', data)
+
+        // Cache successful GET responses
+        if (init.method === 'GET' || !init.method) {
+          if (typeof window !== 'undefined') {
+            try {
+              window.localStorage.setItem(`lunar_cache:${url}`, JSON.stringify(data))
+            } catch (e) {
+              console.warn('Failed to cache successful GET response:', e)
+            }
+          }
+        }
+
+        return data as T
+      } catch (error) {
+        clearTimeout(timeoutId)
+
+        if (error instanceof ApiError) {
+          if (error.isRetryable && attempt < retries) {
+            lastError = error
+            await sleep(retryDelayMs * Math.pow(2, attempt))
+            continue
+          }
+          throw error
+        }
+
+        const isAbort = error instanceof DOMException && error.name === 'AbortError'
+        const apiError = new ApiError(
+          isAbort ? 'Request timed out' : 'Network request failed',
+          { status: 0, code: isAbort ? 'TIMEOUT' : 'NETWORK_ERROR', details: error }
+        )
+
+        if (attempt < retries) {
+          lastError = apiError
           await sleep(retryDelayMs * Math.pow(2, attempt))
           continue
         }
-        throw error
+
+        if (env.api.useMock) {
+          console.warn('Backend unavailable — using mock API')
+          return null as unknown as T
+        }
+
+        throw apiError
       }
-
-      const isAbort = error instanceof DOMException && error.name === 'AbortError'
-      const apiError = new ApiError(
-        isAbort ? 'Request timed out' : 'Network request failed',
-        { status: 0, code: isAbort ? 'TIMEOUT' : 'NETWORK_ERROR', details: error }
-      )
-
-      if (attempt < retries) {
-        lastError = apiError
-        await sleep(retryDelayMs * Math.pow(2, attempt))
-        continue
-      }
-
-      if (env.api.useMock) {
-        // Backend appears unavailable — fall back to mock API consumers.
-        console.warn('Backend unavailable — using mock API')
-        return null as unknown as T
-      }
-
-      throw apiError
     }
+
+    throw lastError ?? new ApiError('Request failed after retries')
   }
 
-  throw lastError ?? new ApiError('Request failed after retries')
+  try {
+    return await runRequest()
+  } catch (error) {
+    if (init.method === 'GET' || !init.method) {
+      if (typeof window !== 'undefined') {
+        try {
+          const cached = window.localStorage.getItem(`lunar_cache:${url}`)
+          if (cached !== null) {
+            console.warn(`API request to ${url} failed. Serving cached data.`, error)
+            return JSON.parse(cached) as T
+          }
+        } catch (e) {
+          console.error('Failed to read from cache:', e)
+        }
+      }
+    }
+    throw error
+  }
 }
 
 export function apiGet<T>(path: string, options?: RequestOptions): Promise<T> {

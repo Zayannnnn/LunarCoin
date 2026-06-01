@@ -65,10 +65,10 @@ export default function AddressSearchPage() {
       ) : offline ? (
         <Card className="bg-card/50 border-border/50 max-w-2xl">
           <CardContent className="py-12 text-center">
-            <Wallet className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-semibold">Miner Offline</h2>
+            <Wallet className="h-10 w-10 text-destructive mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-destructive">Backend unavailable</h2>
             <p className="text-sm text-muted-foreground mt-2">
-              Start the local backend at http://127.0.0.1:5000 to load wallet data.
+              Ensure the LunarMiner API is running at http://127.0.0.1:5000
             </p>
           </CardContent>
         </Card>

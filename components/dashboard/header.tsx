@@ -15,6 +15,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Search, LogOut, User, Settings, Menu } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
+import { MinerStatusBadge } from '@/components/dashboard/miner-status-badge'
 
 interface HeaderProps {
   user: SupabaseUser | null
@@ -62,9 +63,8 @@ export function Header({ user, onMenuClick }: HeaderProps) {
       </form>
 
       {/* Network status indicator */}
-      <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 border border-success/20">
-        <div className="h-2 w-2 rounded-full bg-success pulse-live" />
-        <span className="text-xs text-success font-medium">Mainnet</span>
+      <div className="hidden sm:flex items-center">
+        <MinerStatusBadge />
       </div>
 
       {/* User menu */}

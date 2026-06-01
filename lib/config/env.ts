@@ -39,9 +39,9 @@ export const env = {
     /** Use mock generators when backend is unavailable (dev only) */
     useMock: false,
     /** Request timeout in ms */
-    timeoutMs: Number(process.env.NEXT_PUBLIC_API_TIMEOUT_MS ?? 15000),
+    timeoutMs: Number(process.env.NEXT_PUBLIC_API_TIMEOUT_MS ?? 5000),
     /** Max retry attempts for failed requests */
-    maxRetries: Number(process.env.NEXT_PUBLIC_API_MAX_RETRIES ?? 3),
+    maxRetries: Number(process.env.NEXT_PUBLIC_API_MAX_RETRIES ?? 1),
     /** Base delay for exponential backoff (ms) */
     retryDelayMs: Number(process.env.NEXT_PUBLIC_API_RETRY_DELAY_MS ?? 1000),
   },
