@@ -14,11 +14,17 @@
     "package": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
     "dist:mac": "npm run build && electron-builder --mac",
-    "dist:win": "npm run build && electron-builder --win"
+    "dist:mac:beta": "npm run build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false LUNARCOIN_MAC_SIGNING=beta electron-builder --mac zip dmg --arm64 --publish never",
+    "dist:mac:release": "npm run build && electron-builder --mac zip dmg --publish never",
+    "dist:mac:arm64": "npm run build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false LUNARCOIN_MAC_SIGNING=beta electron-builder --mac zip dmg --arm64 --publish never",
+    "dist:mac:x64": "npm run build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false LUNARCOIN_MAC_SIGNING=beta electron-builder --mac zip dmg --x64 --publish never",
+    "dist:win": "npm run build && electron-builder --win",
+    "verify:mac": "bash scripts/verify-macos-artifact.sh"
   },
   "build": {
     "appId": "com.lunarcoin.desktopminer",
     "productName": "LunarCoin Miner",
+    "artifactName": "LunarCoinMiner-${os}-${arch}.${ext}",
     "directories": {
       "output": "release"
     },
@@ -46,15 +52,27 @@
         ]
       }
     ],
+    "afterSign": "electron/notarize-macos.js",
     "mac": {
       "category": "public.app-category.finance",
-      "identity": null,
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "electron/entitlements.mac.plist",
+      "entitlementsInherit": "electron/entitlements.mac.inherit.plist",
+      "sign": "electron/sign-macos.js",
       "target": [
         "dmg",
         "zip"
       ],
       "icon": "public/images/lunar-logo.png"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Zayannnnn",
+        "repo": "LunarCoin"
+      }
+    ],
     "win": {
       "target": [
         "nsis",
@@ -130,6 +148,7 @@
     "@types/react-dom": "^19",
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
+    "@electron/notarize": "^2.5.0",
     "electron": "^42.2.0",
     "electron-builder": "^26.8.1",
     "postcss": "^8.5",
