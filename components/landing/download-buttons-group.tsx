@@ -76,7 +76,7 @@ export function DownloadButtonsGroup() {
             </svg>
             macOS
           </h3>
-          <p className="text-[11px] text-muted-foreground mt-1">Apple Silicon & Intel DMG</p>
+          <p className="text-[11px] text-muted-foreground mt-1">Apple Silicon & Intel ZIP</p>
         </div>
         <Button
           size="sm"
@@ -85,7 +85,7 @@ export function DownloadButtonsGroup() {
           disabled={downloading !== null}
         >
           <Download className="mr-1.5 h-3.5 w-3.5" />
-          Download (.dmg)
+          Download (.zip)
         </Button>
       </Card>
     </div>
