@@ -624,8 +624,12 @@ export default function MiningPage() {
                     className="w-full border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 font-bold flex items-center justify-center gap-2 group-hover:glow-primary"
                     asChild
                   >
-                    <a href="https://github.com/Zayannnnn/LunarCoin/releases/download/v0.1.0-beta/LunarCoinMiner-Setup.exe" download>
-                      <Download className="h-4 w-4" /> Download Installer (.exe)
+                    <a 
+                      href="https://github.com/Zayannnnn/LunarCoin/releases/download/v0.1.0-beta/LunarCoinMiner-Setup.exe"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Download className="h-4 w-4" /> Download (.exe)
                     </a>
                   </Button>
                 </CardContent>
@@ -645,8 +649,12 @@ export default function MiningPage() {
                     className="w-full border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 font-bold flex items-center justify-center gap-2 group-hover:glow-primary"
                     asChild
                   >
-                    <a href="https://github.com/Zayannnnn/LunarCoin/releases/download/v0.1.0-beta/LunarCoinMiner-mac.zip" download>
-                      <Download className="h-4 w-4" /> Download Installer (.zip)
+                    <a 
+                      href="https://github.com/Zayannnnn/LunarCoin/releases/download/v0.1.0-beta/LunarCoinMiner-mac.zip"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Download className="h-4 w-4" /> Download (.zip)
                     </a>
                   </Button>
                 </CardContent>
