@@ -120,36 +120,49 @@ export function mapAddress(raw: BackendAddress): Address {
   }
 }
 
-export function mapNetworkStats(raw: BackendNetworkStats): NetworkStats {
+export function mapNetworkStats(raw: any): NetworkStats {
+  const stats = raw?.network ?? raw ?? {}
   return {
-    chainHeight: raw.chain_height ?? raw.chainHeight ?? 0,
-    difficulty: raw.difficulty ?? 0,
-    hashRate: raw.hash_rate ?? raw.hashRate ?? '0 H/s',
-    hashRateNumber: raw.hash_rate_number ?? raw.hashRateNumber ?? 0,
-    totalSupply: raw.total_supply ?? raw.totalSupply ?? 21_000_000,
-    circulatingSupply: raw.circulating_supply ?? raw.circulatingSupply ?? 0,
-    mempoolSize: raw.mempool_size ?? raw.mempoolSize ?? 0,
-    mempoolTransactions: raw.mempool_transactions ?? raw.mempoolTransactions ?? 0,
-    connectedPeers: raw.connected_peers ?? raw.connectedPeers ?? 0,
-    lastBlockTime: toTimestampMs(raw.last_block_time ?? raw.lastBlockTime ?? Date.now()),
-    avgBlockTime: raw.avg_block_time ?? raw.avgBlockTime ?? 15,
-    avgFee: raw.avg_fee ?? raw.avgFee ?? 0,
-    tps: raw.tps ?? 0,
+    chainHeight: stats.chain_height ?? stats.chainHeight ?? stats.chain_length ?? stats.chainLength ?? 0,
+    difficulty: stats.difficulty ?? 0,
+    hashRate: stats.hash_rate ?? stats.hashRate ?? '0 H/s',
+    hashRateNumber: stats.hash_rate_number ?? stats.hashRateNumber ?? 0,
+    totalSupply: stats.total_supply ?? stats.totalSupply ?? 21_000_000,
+    circulatingSupply: stats.circulating_supply ?? stats.circulatingSupply ?? 0,
+    mempoolSize: stats.mempool_size ?? stats.mempoolSize ?? 0,
+    mempoolTransactions: stats.mempool_transactions ?? stats.mempoolTransactions ?? stats.mempool_size ?? 0,
+    connectedPeers: stats.connected_peers ?? stats.connectedPeers ?? stats.active_peers ?? 0,
+    lastBlockTime: toTimestampMs(stats.last_block_time ?? stats.lastBlockTime ?? Date.now()),
+    avgBlockTime: stats.avg_block_time ?? stats.avgBlockTime ?? 15,
+    avgFee: stats.avg_fee ?? stats.avgFee ?? 0,
+    tps: stats.tps ?? 0,
   }
 }
 
-export function mapPeer(raw: BackendPeer): Peer {
+export function mapPeer(raw: any): Peer {
+  if (typeof raw === 'string') {
+    return {
+      id: raw,
+      ip: raw.replace(/^wss?:\/\//i, '').split(':')[0],
+      version: '1.0.0',
+      latency: 0,
+      connectionTime: Date.now(),
+      bytesSent: 0,
+      bytesReceived: 0,
+      lastSeen: Date.now(),
+    }
+  }
   return {
-    id: raw.id,
-    ip: raw.ip,
-    version: raw.version,
-    latency: raw.latency,
-    connectionTime: toTimestampMs(raw.connection_time ?? raw.connectionTime ?? Date.now()),
-    bytesSent: raw.bytes_sent ?? raw.bytesSent ?? 0,
-    bytesReceived: raw.bytes_received ?? raw.bytesReceived ?? 0,
-    lastSeen: toTimestampMs(raw.last_seen ?? raw.lastSeen ?? Date.now()),
-    country: raw.country,
-    city: raw.city,
+    id: raw?.id ?? '',
+    ip: raw?.ip ?? '',
+    version: raw?.version ?? '1.0.0',
+    latency: raw?.latency ?? 0,
+    connectionTime: toTimestampMs(raw?.connection_time ?? raw?.connectionTime ?? Date.now()),
+    bytesSent: raw?.bytes_sent ?? raw?.bytesSent ?? 0,
+    bytesReceived: raw?.bytes_received ?? raw?.bytesReceived ?? 0,
+    lastSeen: toTimestampMs(raw?.last_seen ?? raw?.lastSeen ?? Date.now()),
+    country: raw?.country,
+    city: raw?.city,
   }
 }
 

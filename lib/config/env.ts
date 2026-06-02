@@ -16,8 +16,13 @@ export const env = {
   },
   api: {
     get baseUrl(): string {
-      if (typeof window !== 'undefined' && (window as any).lunarDesktop) {
-        return ((window as any).lunarDesktop.backendUrl || 'http://127.0.0.1:5000').replace(/\/$/, '')
+      if (typeof window !== 'undefined') {
+        if ((window as any).__lunarActiveBaseUrl) {
+          return (window as any).__lunarActiveBaseUrl
+        }
+        if ((window as any).lunarDesktop) {
+          return ((window as any).lunarDesktop.backendUrl || 'http://127.0.0.1:5000').replace(/\/$/, '')
+        }
       }
       const rawUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5000'
       const normalized = rawUrl.replace(/\/$/, '')

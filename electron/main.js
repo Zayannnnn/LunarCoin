@@ -110,17 +110,47 @@ async function startBackend() {
 
   const backendDir = resolveBackendDir()
   if (!backendDir) {
-    throw new Error('Unable to find local LunarMiner backend api.py')
+    throw new Error('Unable to find local LunarMiner backend')
   }
 
-  const pythonCmd = process.platform === 'win32' ? 'python' : 'python3'
-  backendProcess = spawnProcess(pythonCmd, ['api.py'], {
-    cwd: backendDir,
-    env: {
-      ...process.env,
-      LUNARCOIN_DATA_DIR: path.join(app.getPath('home'), 'LunarCoinData'),
-    },
-  })
+  const binaryName = process.platform === 'win32' ? 'lunar-miner.exe' : 'lunar-miner-macos'
+  const directBinaryPath = path.join(backendDir, binaryName)
+  const distBinaryPath = path.join(backendDir, 'dist', binaryName)
+
+  let binaryPath = null
+  if (fs.existsSync(directBinaryPath)) {
+    binaryPath = directBinaryPath
+  } else if (fs.existsSync(distBinaryPath)) {
+    binaryPath = distBinaryPath
+  }
+
+  if (binaryPath && (app.isPackaged || process.env.LUNAR_MINER_USE_BINARY === 'true')) {
+    console.log(`[desktop] Spawning compiled standalone backend binary: ${binaryPath}`)
+    if (process.platform !== 'win32') {
+      try {
+        fs.chmodSync(binaryPath, '755')
+      } catch (err) {
+        console.warn(`[desktop] Failed to chmod compiled binary: ${err}`)
+      }
+    }
+    backendProcess = spawnProcess(binaryPath, [], {
+      cwd: path.dirname(binaryPath),
+      env: {
+        ...process.env,
+        LUNARCOIN_DATA_DIR: path.join(app.getPath('home'), 'LunarCoinData'),
+      },
+    })
+  } else {
+    console.log('[desktop] Spawning development backend python script: api.py')
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3'
+    backendProcess = spawnProcess(pythonCmd, ['api.py'], {
+      cwd: backendDir,
+      env: {
+        ...process.env,
+        LUNARCOIN_DATA_DIR: path.join(app.getPath('home'), 'LunarCoinData'),
+      },
+    })
+  }
 
   await waitForBackend(30000)
 }

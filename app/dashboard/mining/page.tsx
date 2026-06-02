@@ -26,6 +26,8 @@ import {
   Check,
   Layers,
   ArrowLeftRight,
+  Download,
+  HelpCircle,
 } from 'lucide-react'
 import {
   AreaChart,
@@ -106,6 +108,33 @@ export default function MiningPage() {
   const [logs, setLogs] = useState<MiningLog[]>([])
   const [notifications, setNotifications] = useState<Array<{ id: number; text: string }>>([])
   const [copied, setCopied] = useState(false)
+  const [isCheckingConn, setIsCheckingConn] = useState(false)
+
+  const handleRecheckConnection = async () => {
+    setIsCheckingConn(true)
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 1200)
+      const response = await fetch('http://127.0.0.1:5000/status', {
+        method: 'GET',
+        mode: 'cors',
+        signal: controller.signal,
+      })
+      clearTimeout(timeoutId)
+      if (response.ok) {
+        console.log('[LOCAL-FIRST] Local miner detected on recheck!')
+        ;(window as any).__lunarActiveBaseUrl = 'http://127.0.0.1:5000'
+        setOffline(false)
+        window.location.reload()
+      } else {
+        alert('Could not establish connection to local miner on http://127.0.0.1:5000. Is the python server running?')
+      }
+    } catch (e) {
+      alert('Local miner not responding. Ensure the backend daemon is running in your terminal: `python3 api.py` on port 5000.')
+    } finally {
+      setIsCheckingConn(false)
+    }
+  }
   
   // Rolling histories
   const [hashrateHistory, setHashrateHistory] = useState<Array<{ time: string; hashrate: number }>>([])
@@ -557,14 +586,118 @@ export default function MiningPage() {
           ))}
         </div>
       ) : offline ? (
-        <Card className="bg-card/50 border-border/50 card-glow">
-          <CardContent className="py-12 text-center">
-            <Pickaxe className="h-10 w-10 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-destructive">Backend unavailable</h2>
-            <p className="text-sm text-muted-foreground mt-2">
-              Ensure the LunarMiner API is running at http://127.0.0.1:5000
-            </p>
-          </CardContent>
+        <Card className="bg-card/45 backdrop-blur-xl border border-border/50 card-glow overflow-hidden relative p-8 md:p-12 max-w-4xl mx-auto">
+          {/* Glowing abstract background ornaments */}
+          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-cyan-500/10 blur-[100px] pointer-events-none" />
+          <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none" />
+
+          <div className="relative space-y-8">
+            <div className="text-center space-y-3">
+              <div className="relative inline-flex items-center justify-center p-4 bg-primary/10 border border-primary/20 rounded-2xl mb-2 animate-bounce duration-[3000ms]">
+                <Cpu className="h-12 w-12 text-primary glow-primary animate-pulse" />
+                <span className="absolute top-1 right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive/70 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive shadow-[0_0_8px_#ef4444]"></span>
+                </span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-white to-white/40 bg-clip-text text-transparent">
+                LunarCoin Miner Not Detected
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+                LunarCoin operates as a <span className="text-primary font-semibold">local-first educational blockchain</span>. All hashing, digital signing, and database persistence run natively on your local computer.
+              </p>
+            </div>
+
+            {/* Installer Download Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+              <Card className="bg-white/[0.02] border border-white/5 hover:border-cyan-500/30 transition-all duration-300 group shadow-md shadow-black/20">
+                <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
+                  <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 group-hover:scale-110 transition-all duration-300">
+                    <Layers className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-white/90">Windows Client</h4>
+                    <p className="text-xs text-white/40">Windows 10 / 11 Installer</p>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    className="w-full border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 font-bold flex items-center justify-center gap-2 group-hover:glow-primary"
+                    asChild
+                  >
+                    <a href="https://github.com/zayannnnn/LunarCoin/releases/download/v0.1.0-beta/LunarCoinMiner-Setup.exe" download>
+                      <Download className="h-4 w-4" /> Download Installer (.exe)
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/[0.02] border border-white/5 hover:border-indigo-500/30 transition-all duration-300 group shadow-md shadow-black/20">
+                <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
+                  <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 group-hover:scale-110 transition-all duration-300">
+                    <Cpu className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-white/90">macOS Client</h4>
+                    <p className="text-xs text-white/40">Intel / Apple Silicon ZIP</p>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    className="w-full border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 font-bold flex items-center justify-center gap-2 group-hover:glow-primary"
+                    asChild
+                  >
+                    <a href="https://github.com/zayannnnn/LunarCoin/releases/download/v0.1.0-beta/LunarCoinMiner-mac.zip" download>
+                      <Download className="h-4 w-4" /> Download Installer (.zip)
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Setup Instructions card */}
+            <Card className="bg-[#090d16] border border-white/5 max-w-2xl mx-auto rounded-xl p-6">
+              <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-3">
+                <HelpCircle className="h-5 w-5 text-primary" />
+                <h3 className="font-bold text-sm tracking-wider uppercase text-white/80">Setup Instructions</h3>
+              </div>
+              <ol className="space-y-4 text-xs md:text-sm text-white/60 list-decimal list-inside pl-1 leading-relaxed">
+                <li>
+                  <span className="font-semibold text-white/80">Download the app package</span> for your operating system using the buttons above.
+                </li>
+                <li>
+                  <span className="font-semibold text-white/80">Run the setup installer</span> to launch the local miner desktop app (CLI users can clone the repo and run <code className="bg-white/5 px-1.5 py-0.5 rounded font-mono text-cyan-400">python3 api.py</code>).
+                </li>
+                <li>
+                  <span className="font-semibold text-white/80">Ensure the daemon is active</span> and listening on localhost port <code className="bg-white/5 px-1.5 py-0.5 rounded font-mono text-cyan-400">5000</code>.
+                </li>
+                <li>
+                  <span className="font-semibold text-white/80">Establish Web Connection</span> by clicking the <span className="text-primary font-semibold">Recheck Connection</span> button below!
+                </li>
+              </ol>
+            </Card>
+
+            {/* Onboarding Control Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 max-w-md mx-auto">
+              <Button
+                onClick={handleRecheckConnection}
+                disabled={isCheckingConn}
+                className="w-full sm:w-auto min-w-[180px] font-bold shadow-lg shadow-primary/20"
+              >
+                {isCheckingConn ? (
+                  <RotateCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RotateCw className="h-4 w-4 mr-2" />
+                )}
+                {isCheckingConn ? 'Checking...' : 'Recheck Connection'}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => window.location.reload()}
+                className="w-full sm:w-auto min-w-[140px] border-white/10 text-white/80 hover:bg-white/5 font-bold"
+              >
+                Refresh Page
+              </Button>
+            </div>
+          </div>
         </Card>
       ) : (
         <>

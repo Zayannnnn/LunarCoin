@@ -15,3 +15,8 @@ ios
 *.key
 .vercel
 .env*
+
+# Large installer binaries
+public/downloads/LunarCoinMiner-Setup.exe
+public/downloads/LunarCoinMiner-mac.zip
+public/downloads/LunarCoinMiner.dmg
