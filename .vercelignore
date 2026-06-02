@@ -1,0 +1,11 @@
+node_modules
+.next
+release
+dist
+out
+build
+public/downloads
+venv
+__pycache__
+*.keystore
+*.jks

@@ -81,9 +81,13 @@ export default async function LandingPage() {
       <header className="border-b border-border/40 bg-background/55 backdrop-blur-md sticky top-0 z-50 transition-all">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <Cpu className="h-5 w-5 text-primary" />
-            </div>
+            <Image
+              src="https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png"
+              alt="LunarCoin Logo"
+              width={36}
+              height={36}
+              className="rounded-full border border-primary/20"
+            />
             <span className="text-xl font-bold tracking-tight text-gradient-primary">LunarCoin</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
@@ -108,6 +112,15 @@ export default async function LandingPage() {
         
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
+            <div className="flex justify-center mb-6 animate-fade-in">
+              <Image
+                src="https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png"
+                alt="LunarCoin Logo"
+                width={80}
+                height={80}
+                className="rounded-full border border-primary/30 shadow-[0_0_20px_rgba(0,240,255,0.2)]"
+              />
+            </div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6 animate-fade-in">
               <Shield className="h-4 w-4 text-primary" />
               <span className="text-xs font-semibold text-primary uppercase tracking-wider">Educational Blockchain Mining Platform</span>
@@ -666,9 +679,13 @@ export default async function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-7 w-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <Cpu className="h-4 w-4 text-primary" />
-              </div>
+              <Image
+                src="https://res.cloudinary.com/dhxmwk5of/image/upload/q_auto/f_auto/v1779609291/20260524_132338_wkrjvx.png"
+                alt="LunarCoin Logo"
+                width={28}
+                height={28}
+                className="rounded-full border border-primary/20"
+              />
               <span className="font-semibold text-gradient-primary">LunarCoin</span>
             </div>
             <p className="text-xs text-muted-foreground">
