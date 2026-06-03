@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="64" viewBox="0 0 120 64">
-  <rect width="120" height="64" rx="10" fill="#071227"/>
-  <g transform="translate(10,8)">
-    <rect x="0" y="0" width="44" height="44" rx="6" fill="#071627" stroke="#fbbf24" stroke-width="2"/>
-    <polygon points="14,34 30,34 22,16" fill="#fbbf24"/>
-    <text x="70" y="30" font-size="12" fill="#9fb8d9" font-family="Arial">Mining Engine</text>
-  </g>
-</svg>
