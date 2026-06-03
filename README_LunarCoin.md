@@ -2,7 +2,7 @@
 
 ## Demystifying Blockchain Through Real-Time CPU Mining
 
-A local-first educational blockchain ecosystem featuring Proof-of-Work mining, wallets, transactions, P2P networking, smart contracts, DAO governance, AI agents, LunarFS distributed storage, NFTs, DApps, and a modern explorer.
+A local-first educational blockchain ecosystem featuring Proof-of-Work mining, wallets, transactions, P2P networking, smart contracts, DAO governance, AI agents, LunarFS distributed storage, NFTs, DApps, and a modern explorer..
 
 ---
 
